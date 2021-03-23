@@ -1,0 +1,22 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:tools="http://schemas.android.com/tools"
+      tools:showIn="navigation_view">
+
+
+    <group android:checkableBehavior="single">
+        <item
+                android:id="@+id/nav_saved"
+                android:icon="@drawable/saved"
+                android:title="Guardados"/>
+        <item
+                android:id="@+id/nav_history"
+                android:icon="@drawable/reloj"
+                android:title="Historial"/>
+        <item
+                android:id="@+id/nav_comunidad"
+                android:icon="@drawable/comunidad"
+                android:title="Crear comunidad"/>
+    </group>
+
+
+</menu>
