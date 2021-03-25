@@ -5,11 +5,7 @@
               android:layout_height="match_parent"
               tools:context=".fragments.HomeFragment"
 >
-    <ImageView
-            android:id="@+id/ivFotoPerfil"
-            android:layout_width="200dp"
-            android:layout_height="200dp"
-            android:layout_gravity="center"
-            android:src="@drawable/fondo"
-    />
+    <androidx.recyclerview.widget.RecyclerView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" android:id="@+id/rvItemPosts"/>
 </LinearLayout>
