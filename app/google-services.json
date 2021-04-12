@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "951648434705",
+    "project_id": "foro-677ff",
+    "storage_bucket": "foro-677ff.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:951648434705:android:ad84270a2b3d2941a20fb0",
+        "android_client_info": {
+          "package_name": "com.joelnemi.foro"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "951648434705-dt5p2mm3una3bsqqa9ifgd38q9cksjo2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB2rGC6Sn8CTtG0bUP1XJew4esyUegew6s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "951648434705-dt5p2mm3una3bsqqa9ifgd38q9cksjo2.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

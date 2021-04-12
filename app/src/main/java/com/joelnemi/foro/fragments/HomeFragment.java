@@ -1,5 +1,6 @@
 package com.joelnemi.foro.fragments;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,26 +10,30 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import com.joelnemi.foro.AdaptadorPosts;
-import com.joelnemi.foro.Post;
-import com.joelnemi.foro.R;
+import com.joelnemi.foro.*;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class HomeFragment extends Fragment {
+public class HomeFragment extends Fragment implements IOnClickPostListener {
 
     private static HomeFragment fragment;
 
 
+
     private RecyclerView rvListado;
     private AdaptadorPosts adaptador;
-    public HomeFragment() {
-        // Required empty public constructor
+
+    private static ArrayList<Post> posts;
+
+    private HomeFragment() {
     }
 
-    public static HomeFragment getInstance() {
-        if (fragment == null)
+    public static HomeFragment getInstance(ArrayList<Post> post) {
+        if (fragment == null) {
             fragment = new HomeFragment();
+            posts = post;
+        }
 
         return fragment;
     }
@@ -49,14 +54,18 @@ public class HomeFragment extends Fragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        ArrayList<Post> posts = new ArrayList<>();
-        posts.add(new Post());
-        posts.add(new Post());
-        posts.add(new Post());
-        adaptador = new AdaptadorPosts(getContext(), posts);
+
+        adaptador = new AdaptadorPosts(getContext(), posts,this);
         rvListado.setAdapter(adaptador);
         rvListado.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false));
         rvListado.addItemDecoration(new DividerItemDecoration(rvListado.getContext(), DividerItemDecoration.VERTICAL));
 
+    }
+
+    @Override
+    public void onUpdateSelected(Post post) {
+        Intent i = new Intent(getContext(), DetailFragment.class);
+        i.putExtra("post",post);
+        startActivity(i);
     }
 }

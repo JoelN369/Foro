@@ -10,6 +10,7 @@ import com.joelnemi.foro.R;
 public class SearchFragment extends Fragment {
 
     private static SearchFragment fragment;
+    public static String pruebaFRanc;
 
 
     public static SearchFragment getInstance() {

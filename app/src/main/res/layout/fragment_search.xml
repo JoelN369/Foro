@@ -6,7 +6,7 @@
              tools:context=".fragments.HomeFragment"
 >
     <ImageView
-            android:id="@+id/ivFotoPerfil"
+            android:id="@+id/ivFotoPerfilPost"
             android:layout_width="200dp"
             android:layout_height="200dp"
             android:layout_gravity="center"

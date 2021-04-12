@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:tools="http://schemas.android.com/tools"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content" android:orientation="vertical" android:padding="10dp">
+
+    <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:layout_weight="1">
+        <ImageView
+                android:layout_width="50dp"
+                android:layout_height="50dp" tools:srcCompat="@tools:sample/avatars"
+                android:id="@+id/ivFotoPerfilComent"/>
+        <TextView
+                android:text="TextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" android:id="@+id/tvNameComment"/>
+        <TextView
+                android:text="TextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" android:id="@+id/tvTimeElapsed"/>
+    </LinearLayout>
+    <TextView
+            android:text="TextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:id="@+id/tvComment" android:layout_weight="1"
+            android:padding="20dp"/>
+    <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+        <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp" app:srcCompat="@drawable/curved_arrow_up" android:scaleX="-1"
+                android:id="@+id/ivUpinComments" app:tint="@color/iconColor"/>
+        <TextView
+                android:layout_width="50dp"
+                android:layout_height="wrap_content" android:id="@+id/tvValoracioninComments"
+                android:textColor="@color/iconColor" android:text="34.8k" android:textAlignment="center"/>
+        <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp" app:srcCompat="@drawable/arrow_curve_down"
+                android:id="@+id/ivDowninComments" app:tint="@color/iconColor"
+        />
+        <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp" app:srcCompat="@drawable/arrow_curve_down"
+                android:id="@+id/ivReply" app:tint="@color/iconColor" android:rotation="90"
+                android:scaleX="-1"
+        />
+
+        <TextView
+                android:text="REPLY"
+                android:layout_height="wrap_content" android:id="@+id/tvReply"
+                android:textColor="@color/iconColor" android:layout_width="wrap_content"/>
+
+    </LinearLayout>
+</LinearLayout>
