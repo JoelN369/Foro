@@ -1,4 +1,4 @@
-package com.joelnemi.foro;
+package com.joelnemi.foro.models;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -51,5 +51,15 @@ public class Comentario implements Serializable {
 
     public void setComentario(String comentario) {
         this.comentario = comentario;
+    }
+
+    @Override
+    public String toString() {
+        return "Comentario{" +
+                "userUID='" + userUID + '\'' +
+                ", comentario='" + comentario + '\'' +
+                ", fecha=" + fecha +
+                ", valoraciones=" + valoraciones +
+                '}';
     }
 }

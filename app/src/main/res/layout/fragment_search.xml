@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-             xmlns:tools="http://schemas.android.com/tools"
-             android:layout_width="match_parent"
-             android:layout_height="match_parent"
-             tools:context=".fragments.HomeFragment"
->
-    <ImageView
-            android:id="@+id/ivFotoPerfilPost"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              tools:context=".fragments.HomeFragment"
+              android:orientation="vertical">
+    <Spinner
             android:layout_width="200dp"
-            android:layout_height="200dp"
-            android:layout_gravity="center"
-            android:src="@drawable/fondo"
-    />
-</FrameLayout>
+            android:layout_height="55dp" android:id="@+id/spOrden" android:padding="10dp"
+            android:spinnerMode="dialog" android:background="@color/colorPrimary"/>
+    <androidx.recyclerview.widget.RecyclerView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" android:id="@+id/rvItemPosts"/>
+</LinearLayout>

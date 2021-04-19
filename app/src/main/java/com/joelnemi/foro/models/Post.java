@@ -1,4 +1,4 @@
-package com.joelnemi.foro;
+package com.joelnemi.foro.models;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -7,7 +7,7 @@ import java.util.Date;
 
 public class Post implements Comparable<Post>, Serializable {
 
-
+    private String postUID;
     private String texto;
     private String urlFoto;
     private Long valoracion;
@@ -17,6 +17,7 @@ public class Post implements Comparable<Post>, Serializable {
     private Date fechaPost;
 
     public Post() {
+        this.postUID = "";
         this.texto = "Esto es un error";
         this.urlFoto = "";
         this.valoracion = 404L;
@@ -27,8 +28,9 @@ public class Post implements Comparable<Post>, Serializable {
 
     }
 
-    public Post(String texto, String urlFoto, Long valoracion, ArrayList<Comentario> comentarios, String userUID,
+    public Post(String postUID, String texto, String urlFoto, Long valoracion, ArrayList<Comentario> comentarios, String userUID,
                 String categoria, Date fechaPost) {
+        this.postUID = postUID;
         this.texto = texto;
         this.urlFoto = urlFoto;
         this.valoracion = valoracion;
@@ -94,6 +96,31 @@ public class Post implements Comparable<Post>, Serializable {
         this.fechaPost = fechaPost;
     }
 
+    public String getUserUID() {
+        return userUID;
+    }
+
+    public void setUserUID(String userUID) {
+        this.userUID = userUID;
+    }
+
+    public static Comparator<Post> getMasValorados() {
+        return masValorados;
+    }
+
+    public static void setMasValorados(Comparator<Post> masValorados) {
+        Post.masValorados = masValorados;
+    }
+
+    public String getPostUID() {
+        return postUID;
+    }
+
+    public void setPostUID(String postUID) {
+        this.postUID = postUID;
+    }
+
+
     @Override
     public String toString() {
         return "Post{" +
@@ -108,19 +135,10 @@ public class Post implements Comparable<Post>, Serializable {
 
     @Override
     public int compareTo(Post o) {
-        return this.fechaPost.compareTo(o.getFechaPost());
+        return o.getFechaPost().compareTo(this.fechaPost);
     }
     public static Comparator<Post> masValorados
-            = new Comparator<Post>(){
-
-
-        @Override
-        public int compare(Post o1, Post o2) {
-            return o1.getValoracion().compareTo(o2.getValoracion());
-
-        }
-
-    };
+            = (o1, o2) -> o1.getValoracion().compareTo(o2.getValoracion());
 
 
 }

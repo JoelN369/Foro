@@ -1,7 +1,9 @@
-package com.joelnemi.foro;
+package com.joelnemi.foro.activities;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -19,6 +21,10 @@ import com.google.firebase.firestore.*;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.joelnemi.foro.adapters.AdaptadorOpciones;
+import com.joelnemi.foro.models.Comentario;
+import com.joelnemi.foro.models.Post;
+import com.joelnemi.foro.R;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -118,10 +124,10 @@ public class ActivityNewPost extends AppCompatActivity implements View.OnClickLi
 
         switch (item.getItemId()) {
             case R.id.navigation_post:
-                valido = guardarPost();
-                if (valido) {
-
-                    onBackPressed();
+                if (!fotoSubida) {
+                    subirfoto(uri);
+                    Toast.makeText(this,"Subiendo Foto...",Toast.LENGTH_SHORT).show();
+                    return false;
                 }
                 return true;
 
@@ -130,41 +136,32 @@ public class ActivityNewPost extends AppCompatActivity implements View.OnClickLi
         }
     }
 
-    public boolean guardarPost(){
+
+    public void guardarPost(){
 
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
         if (etTexto.getText().equals("")||etTexto.getText() == null){
-            return false;
-        }
-        if (!fotoSubida) {
-            subirfoto(uri);
-            Toast.makeText(this,"Subiendo Foto...",Toast.LENGTH_SHORT).show();
-            return false;
-        }
-        if (fotoSubida){
-            ArrayList<Comentario> comentarios = new ArrayList<>();
-            comentarios.add(new Comentario(userUID,"Que GATITO MAS BONITO",new Date(),0L));
-            comentarios.add(new Comentario(userUID,"Que GATITO MAS BONITO",new Date(),0L));
-            comentarios.add(new Comentario(userUID,"Que GATITO MAS BONITO",new Date(),0L));
-            comentarios.add(new Comentario(userUID,"Que GATITO MAS BONITO",new Date(),0L));
-            comentarios.add(new Comentario(userUID,"Que GATITO MAS BONITO",new Date(),0L));
-            comentarios.add(new Comentario(userUID,"Que GATITO MAS BONITO",new Date(),0L));
-            comentarios.add(new Comentario(userUID,"Que GATITO MAS BONITO",new Date(),0L));
-            comentarios.add(new Comentario(userUID,"Que GATITO MAS BONITO",new Date(),0L));
-            comentarios.add(new Comentario(userUID,"Que GATITO MAS BONITO",new Date(),0L));
-            comentarios.add(new Comentario(userUID,"Que GATITO MAS BONITO",new Date(),0L));
-            comentarios.add(new Comentario(userUID,"Que GATITO MAS BONITO",new Date(),0L));
-            comentarios.add(new Comentario(userUID,"Que GATITO MAS BONITO",new Date(),0L));
-            comentarios.add(new Comentario(userUID,"Que GATITO MAS BONITO",new Date(),0L));
-            comentarios.add(new Comentario(userUID,"Que GATITO MAS BONITO",new Date(),0L));
-            comentarios.add(new Comentario(userUID,"Que GATITO MAS BONITO",new Date(),0L));
 
-        db.collection("Posts").add(new Post(etTexto.getText().toString(), userPhoto, 0L,
-                comentarios, userUID, categoria, new Date()));
-        return true;
         }
-        return false;
+
+        if (fotoSubida && userUID != null){
+            ArrayList<Comentario> comentarios = new ArrayList<>();
+
+            String postUID = UUID.randomUUID()+"";
+
+            db.collection("Posts").document(postUID).set(new Post(postUID,etTexto.getText().toString(), userPhoto, 0L,
+                comentarios, userUID, categoria, new Date())).addOnSuccessListener(new OnSuccessListener<Void>() {
+                @Override
+                public void onSuccess(Void unused) {
+                    onBackPressed();
+                }
+            });
+
+        }else{
+            Toast.makeText(this,"Problema con reconocer el Usuario",Toast.LENGTH_SHORT).show();
+        }
+
     }
 
     public void llenarSpinner() {
@@ -193,12 +190,14 @@ public class ActivityNewPost extends AppCompatActivity implements View.OnClickLi
             public void onEvent(@Nullable  QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
 
                 Log.d("cat",value.getDocuments().get(0).getData().get("nombre").toString());
+
                 for (DocumentSnapshot ds :value.getDocuments()){
                     categorias.add(ds.getData().get("nombre").toString());
                 }
 
-                ArrayAdapter<String> adapterCategoria = new ArrayAdapter(getApplicationContext(), android.R.layout.simple_spinner_dropdown_item, categorias);
-                adapterCategoria.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                ArrayAdapter<String> adapterCategoria = new AdaptadorOpciones(getApplicationContext(),
+                        android.R.layout.simple_dropdown_item_1line, categorias);
+                adapterCategoria.setDropDownViewResource(R.layout.custom_spinner_dropdown_item);
 
                 spCat.setAdapter(adapterCategoria);
                 spCat.setSelection(0);
@@ -214,6 +213,7 @@ public class ActivityNewPost extends AppCompatActivity implements View.OnClickLi
         if (requestCode == UPLOAD_IMAGE && resultCode == Activity.RESULT_OK){
             if (data!=null){
                 ibAddImage.setImageURI(data.getData());
+                ibAddImage.setColorFilter(Color.TRANSPARENT);
                 Log.d("data", data.getData().toString());
                 uri = data.getData();
 
@@ -237,6 +237,7 @@ public class ActivityNewPost extends AppCompatActivity implements View.OnClickLi
                     public void onSuccess(Uri uri) {
                         userPhoto = uri.toString();
                         fotoSubida = true;
+                        guardarPost();
                     }
                 });
             }

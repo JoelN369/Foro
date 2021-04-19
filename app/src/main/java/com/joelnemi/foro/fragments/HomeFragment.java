@@ -10,9 +10,14 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import com.joelnemi.foro.*;
+import com.joelnemi.foro.activities.DetalleActivity;
+import com.joelnemi.foro.adapters.AdaptadorPosts;
+import com.joelnemi.foro.listeners.IOnClickPostListener;
+import com.joelnemi.foro.listeners.IRefreshListener;
+import com.joelnemi.foro.models.Post;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 
 public class HomeFragment extends Fragment implements IOnClickPostListener {
@@ -23,18 +28,23 @@ public class HomeFragment extends Fragment implements IOnClickPostListener {
 
     private RecyclerView rvListado;
     private AdaptadorPosts adaptador;
+    private SwipeRefreshLayout srlHome;
+    private static IRefreshListener listener;
+
 
     private static ArrayList<Post> posts;
 
     private HomeFragment() {
     }
 
-    public static HomeFragment getInstance(ArrayList<Post> post) {
+    public static HomeFragment getInstance(ArrayList<Post> post, IRefreshListener listenerP) {
         if (fragment == null) {
             fragment = new HomeFragment();
-            posts = post;
+            listener = listenerP;
+
         }
 
+        posts = post;
         return fragment;
     }
     @Override
@@ -48,6 +58,15 @@ public class HomeFragment extends Fragment implements IOnClickPostListener {
         View v = inflater.inflate(R.layout.fragment_home, container, false);
 
         rvListado = v.findViewById(R.id.rvItemPosts);
+        srlHome = v.findViewById(R.id.srlHome);
+        srlHome.setColorSchemeResources(R.color.colorAccent, R.color.colorPrimary, android.R.color.holo_green_light);
+        srlHome.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                listener.onRefresh();
+
+            }
+        });
         return v;
     }
 
@@ -64,7 +83,7 @@ public class HomeFragment extends Fragment implements IOnClickPostListener {
 
     @Override
     public void onUpdateSelected(Post post) {
-        Intent i = new Intent(getContext(), DetailFragment.class);
+        Intent i = new Intent(getContext(), DetalleActivity.class);
         i.putExtra("post",post);
         startActivity(i);
     }

@@ -1,38 +1,38 @@
-package com.joelnemi.foro.fragments;
+package com.joelnemi.foro.activities;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.*;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 import androidx.core.widget.NestedScrollView;
-import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
-import com.google.android.material.appbar.AppBarLayout;
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.joelnemi.foro.*;
+import com.joelnemi.foro.adapters.AdaptadorComentarios;
+import com.joelnemi.foro.models.Comentario;
+import com.joelnemi.foro.models.Post;
+import com.joelnemi.foro.models.Usuario;
 import com.joelnemi.foro.utils.Lib;
 
 import java.util.ArrayList;
+import java.util.Date;
 
-public class DetailFragment extends AppCompatActivity {
+public class DetalleActivity extends AppCompatActivity {
 
     private TextView tvParrafo;
     private TextView tvnombrePerfil;
@@ -46,14 +46,17 @@ public class DetailFragment extends AppCompatActivity {
     private ImageView ivUp;
     private ImageView ivDown;
     private static Post post;
-    private RecyclerView rvListado;
+    private RecyclerView rvComments;
     private AdaptadorComentarios adaptador;
-
+    private ImageButton ibSendComment;
+    private EditText etCommentText;
+    private NestedScrollView svDetalle;
+    private FirebaseFirestore db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.fragment_detail_post);
+        setContentView(R.layout.activity_detail_post);
 
         final Toolbar toolbar = findViewById(R.id.toolBarDetail);
 
@@ -85,7 +88,10 @@ public class DetailFragment extends AppCompatActivity {
         ivDown = findViewById(R.id.ivDown);
         ivPhotoProfile = findViewById(R.id.ivFotoPerfilPost);
         ivFoto = findViewById(R.id.ivFoto);
-        rvListado = findViewById(R.id.rvComments);
+        rvComments = findViewById(R.id.rvComments);
+        ibSendComment = findViewById(R.id.ibSendComment);
+        etCommentText = findViewById(R.id.etCommentText);
+        svDetalle = findViewById(R.id.svDetalle);
 
 
         //Compruebo si el bundle es nulo y si contiene extras y las guardo
@@ -102,7 +108,6 @@ public class DetailFragment extends AppCompatActivity {
 
         final FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-        //DocumentReference docRef = db.collection("users").document(userUID).set(new Usuario());
         db.collection("users").document(post.getUser()).addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
             public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
@@ -119,13 +124,26 @@ public class DetailFragment extends AppCompatActivity {
 
 
     }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        onBackPressed();
+        return false;
+    }
+
+    /**
+     * Modifica la toolbar mostrando el nombre de usuario que subio este post
+     * @param toolbar
+     * @param scrollView
+     * @param usuario
+     */
     public void modificarToolbar(final Toolbar toolbar, NestedScrollView scrollView, final Usuario usuario){
         scrollView.setOnScrollChangeListener(new NestedScrollView.OnScrollChangeListener() {
 
             @Override
             public void onScrollChange(NestedScrollView v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
-                Log.d("Joelillo",scrollX+", Y:"+scrollY);
 
+                //Si la pantalla se desplaza mas de 200 pixeles se muestra el nombre del usuario
                 if (scrollY>200) {
 
 
@@ -158,6 +176,7 @@ public class DetailFragment extends AppCompatActivity {
             tvValoracion.setText(post.getValoracion() + "");
             tvnumComs.setText(post.getComentarios().size() + "");
             tvCategoria.setText(post.getCategoria());
+            db = FirebaseFirestore.getInstance();
 
             if (post.getUrlFoto() != null)
                 if (!post.getUrlFoto().equals(""))
@@ -184,8 +203,8 @@ public class DetailFragment extends AppCompatActivity {
             ivDown.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    ivUp.setColorFilter(ContextCompat.getColor(DetailFragment.this, R.color.iconColor));
-                    ivDown.setColorFilter(ContextCompat.getColor(DetailFragment.this, R.color.red));
+                    ivUp.setColorFilter(ContextCompat.getColor(DetalleActivity.this, R.color.iconColor));
+                    ivDown.setColorFilter(ContextCompat.getColor(DetalleActivity.this, R.color.red));
 
 
                 }
@@ -194,15 +213,40 @@ public class DetailFragment extends AppCompatActivity {
                 @Override
                 public void onClick(View v) {
 
-                    ivDown.setColorFilter(ContextCompat.getColor(DetailFragment.this, R.color.iconColor));
-                    ivUp.setColorFilter(ContextCompat.getColor(DetailFragment.this, R.color.green));
+                    ivDown.setColorFilter(ContextCompat.getColor(DetalleActivity.this, R.color.iconColor));
+                    ivUp.setColorFilter(ContextCompat.getColor(DetalleActivity.this, R.color.green));
 
                 }
             });
-            adaptador = new AdaptadorComentarios(this, post.getComentarios());
-            rvListado.setAdapter(adaptador);
-            rvListado.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
-            rvListado.addItemDecoration(new DividerItemDecoration(rvListado.getContext(), DividerItemDecoration.VERTICAL));
+
+            ibSendComment.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    String comentario = etCommentText.getText().toString();
+                    if (!comentario.equals("")) {
+                        post.getComentarios().add(new Comentario(user.getUserUID(), comentario,
+                                new Date(), 0L));
+
+
+                        crearReciclerView(post.getComentarios());
+                        db.collection("Posts").document(post.getPostUID()).update("comentarios", post.getComentarios());
+
+                        InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                        svDetalle.fullScroll(NestedScrollView.FOCUS_DOWN);
+                        imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+                        etCommentText.setText("");
+                    }
+                }
+            });
+
+            crearReciclerView(post.getComentarios());
         }
+    }
+
+    public void crearReciclerView(ArrayList<Comentario> comentarios){
+        adaptador = new AdaptadorComentarios(this, comentarios);
+        rvComments.setAdapter(adaptador);
+        rvComments.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
+        rvComments.addItemDecoration(new DividerItemDecoration(rvComments.getContext(), DividerItemDecoration.VERTICAL));
     }
 }

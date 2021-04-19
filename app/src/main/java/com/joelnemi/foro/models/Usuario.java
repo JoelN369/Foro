@@ -1,14 +1,13 @@
-package com.joelnemi.foro;
+package com.joelnemi.foro.models;
 
-import com.google.firebase.Timestamp;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 public class Usuario implements Serializable {
 
+    private String userUID;
     private String nombre;
     private String foto;
     private Long fama;
@@ -18,6 +17,7 @@ public class Usuario implements Serializable {
     private ArrayList<String> idsUsuariosSeguidos;
 
     public Usuario() {
+        this.userUID = "";
         this.nombre = "Joel369";
         this.foto = "";
         this.fama = 321L;
@@ -27,7 +27,8 @@ public class Usuario implements Serializable {
         this.idsUsuariosSeguidos = new ArrayList<>();
     }
 
-    public Usuario(String nombre, String foto){
+    public Usuario(String userUID, String nombre, String foto){
+        this.userUID = userUID;
         this.nombre = nombre;
         this.foto = foto;
         this.fama = 0L;
@@ -38,8 +39,9 @@ public class Usuario implements Serializable {
 
     }
 
-    public Usuario(String nombre, String foto, Long fama, Date kholliAge, ArrayList<String> idsPostsGuardados,
+    public Usuario(String userUID, String nombre, String foto, Long fama, Date kholliAge, ArrayList<String> idsPostsGuardados,
                    ArrayList<String> idsPostsSubidos,ArrayList<String> idsUsuariosSeguidos) {
+        this.userUID = userUID;
         this.nombre = nombre;
         this.foto = foto;
         this.fama = fama;
@@ -111,5 +113,27 @@ public class Usuario implements Serializable {
 
     public void setIdsUsuariosSeguidos(ArrayList<String> idsUsuariosSeguidos) {
         this.idsUsuariosSeguidos = idsUsuariosSeguidos;
+    }
+
+    public String getUserUID() {
+        return userUID;
+    }
+
+    public void setUserUID(String userUID) {
+        this.userUID = userUID;
+    }
+
+    @Override
+    public String toString() {
+        return "Usuario{" +
+                "userUID='" + userUID + '\'' +
+                ", nombre='" + nombre + '\'' +
+                ", foto='" + foto + '\'' +
+                ", fama=" + fama +
+                ", kholliAge=" + kholliAge +
+                ", idsPostsGuardados=" + idsPostsGuardados +
+                ", idsPostsSubidos=" + idsPostsSubidos +
+                ", idsUsuariosSeguidos=" + idsUsuariosSeguidos +
+                '}';
     }
 }

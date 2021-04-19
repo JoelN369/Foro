@@ -1,4 +1,4 @@
-package com.joelnemi.foro;
+package com.joelnemi.foro.adapters;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -8,15 +8,16 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.bumptech.glide.request.RequestOptions;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.joelnemi.foro.models.Comentario;
+import com.joelnemi.foro.R;
+import com.joelnemi.foro.models.Usuario;
 import com.joelnemi.foro.utils.Lib;
 
 import java.util.ArrayList;
@@ -69,6 +70,7 @@ public class AdaptadorComentarios extends RecyclerView.Adapter<AdaptadorComentar
         private TextView tvTimeElapsed;
         private TextView tvComentario;
         private ImageView ivFotoPerfil;
+        private TextView tvValoracion;
 
 
 
@@ -81,6 +83,7 @@ public class AdaptadorComentarios extends RecyclerView.Adapter<AdaptadorComentar
             tvTimeElapsed = itemView.findViewById(R.id.tvTimeElapsed);
             tvComentario = itemView.findViewById(R.id.tvComment);
             ivFotoPerfil = itemView.findViewById(R.id.ivFotoPerfilComent);
+            tvValoracion = itemView. findViewById(R.id.tvValoracioninComments);
 
 
         }
@@ -89,7 +92,6 @@ public class AdaptadorComentarios extends RecyclerView.Adapter<AdaptadorComentar
 
             final FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-            //DocumentReference docRef = db.collection("users").document(userUID).set(new Usuario());
             db.collection("users").document(comentario.getUserUID()).addSnapshotListener(new EventListener<DocumentSnapshot>() {
                 @Override
                 public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
@@ -111,6 +113,7 @@ public class AdaptadorComentarios extends RecyclerView.Adapter<AdaptadorComentar
                 tvComentario.setText(comentario.getComentario());
                 String fecha = Lib.getTimeElapsed(comentario.getFecha());
                 tvTimeElapsed.setText(fecha);
+                tvValoracion.setText(comentario.getValoraciones()+"");
 
 
                 if (user.getFoto() != null)

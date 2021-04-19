@@ -28,25 +28,25 @@
             <include layout="@layout/item_post"/>
             <androidx.recyclerview.widget.RecyclerView
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content" android:id="@+id/rvComments">
+                    android:layout_height="wrap_content" android:id="@+id/rvComments"
+                    android:layout_marginBottom="60dp">
             </androidx.recyclerview.widget.RecyclerView>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
     <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="60dp"
-            android:layout_alignParentBottom="true"
-            android:orientation="horizontal" android:layout_gravity="bottom" android:background="@color/colorPrimary">
+            android:layout_gravity="bottom"
+            android:background="@color/colorPrimary">
 
         <EditText
                 android:id="@+id/etCommentText"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_gravity="center_vertical"
-                android:layout_below="@+id/chatViewMessageEntrySeperator"
                 android:layout_toLeftOf="@+id/ibSendComment"
                 android:background="@android:color/transparent"
-                android:hint="Enter message"
+                android:hint="Enter comment"
                 android:inputType="textCapSentences|textMultiLine"
                 android:maxLength="1000"
                 android:maxLines="4"

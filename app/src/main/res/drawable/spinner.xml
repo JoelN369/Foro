@@ -21,7 +21,7 @@
 
                 <bitmap
                         android:gravity="right"
-                        android:tint="#000000"
+                        android:tint= "@color/white"
                         android:src="@android:drawable/arrow_down_float">
                 </bitmap>
 

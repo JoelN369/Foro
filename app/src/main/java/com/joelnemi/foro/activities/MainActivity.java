@@ -1,4 +1,4 @@
-package com.joelnemi.foro;
+package com.joelnemi.foro.activities;
 
 import android.content.Intent;
 import android.util.Log;
@@ -13,6 +13,9 @@ import android.os.Bundle;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
@@ -28,14 +31,19 @@ import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.*;
 import com.google.firebase.firestore.*;
 import com.google.firebase.firestore.EventListener;
+import com.joelnemi.foro.R;
 import com.joelnemi.foro.fragments.HomeFragment;
 import com.joelnemi.foro.fragments.SearchFragment;
+import com.joelnemi.foro.listeners.IRefreshListener;
+import com.joelnemi.foro.models.Comentario;
+import com.joelnemi.foro.models.Post;
+import com.joelnemi.foro.models.Usuario;
 
 import java.util.*;
 
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener,
-        BottomNavigationView.OnNavigationItemSelectedListener {
+        BottomNavigationView.OnNavigationItemSelectedListener, IRefreshListener {
 
     BottomNavigationView bottomNavigation;
     private FirebaseAuth mAuth;
@@ -45,6 +53,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private ArrayList<Post> posts;
     private String userUID;
     private Usuario usuario;
+    private boolean isMainActivityRunnning;
 
 
     @Override
@@ -67,50 +76,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         // Initialize Firebase Auth
         mAuth = FirebaseAuth.getInstance();
 
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        bottomNavigation = findViewById(R.id.bottom_navigation);
+        cargarNavigation();
 
-
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.addDrawerListener(toggle);
-        toggle.syncState();
-        NavigationView navigationView = findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                switch (item.getItemId()) {
-                    case R.id.nav_saved:
-                        getSupportFragmentManager().beginTransaction()
-                                .replace(R.id.flMainLayout, HomeFragment.getInstance(posts)).addToBackStack(null)
-                                .commit();
-                        return true;
-                    case R.id.nav_history:
-
-                        return true;
-                    case R.id.nav_comunidad:
-                        //openFragment(NotificationFragment.newInstance("", ""));
-                        return true;
-                }
-                DrawerLayout drawer = findViewById(R.id.drawer_layout);
-                drawer.closeDrawer(GravityCompat.START);
-                return false;
-            }
-        });
-        bottomNavigation.setOnNavigationItemSelectedListener(this);
 
     }
 
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        // Check if user is signed in (non-null) and update UI accordingly.
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-        //updateUI(currentUser);
-    }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -131,6 +101,20 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 //updateUI(null);
             }
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        isMainActivityRunnning = true;
+
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        isMainActivityRunnning = false;
     }
 
     private void firebaseAuthWithGoogle(String idToken) {
@@ -156,7 +140,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     public void cargarDatosPrueba() {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
-        db.collection("Posts").add(new Post("Esto es una prueba", "", 123L,
+        db.collection("Posts").add(new Post(UUID.randomUUID().toString(),"Esto es una prueba", "", 123L,
                 new ArrayList<Comentario>(), "useridPrueba", "Gatos", new Date()));
     }
 
@@ -164,11 +148,34 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public void descargarDatos() {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-        db.collection("Posts").addSnapshotListener(new EventListener<QuerySnapshot>() {
+        db.collection("Posts").orderBy("fechaPost", Query.Direction.DESCENDING).addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
                 posts = (ArrayList<Post>) value.toObjects(Post.class);
                 Log.d("postjoel", value.getDocuments().toString());
+
+
+                //Collections.sort(posts);
+                if (isMainActivityRunnning) {
+                    Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.flMainLayout);
+                    if (currentFragment instanceof HomeFragment) {
+                        HomeFragment hf = (HomeFragment) currentFragment;
+                        SwipeRefreshLayout srlHome = hf.getView().findViewById(R.id.srlHome);
+                        if (srlHome.isRefreshing()){
+                            srlHome.setRefreshing(false);
+                        }
+                        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+                        fragmentTransaction.detach(currentFragment);
+                        fragmentTransaction.attach(currentFragment);
+                        fragmentTransaction.commit();
+                        bottomNavigation.setSelectedItemId(R.id.navigation_home);
+                    } else {
+                        getSupportFragmentManager().beginTransaction()
+                                .replace(R.id.flMainLayout, HomeFragment.getInstance(posts, MainActivity.this)).addToBackStack(null)
+                                .commit();
+                        bottomNavigation.setSelectedItemId(R.id.navigation_home);
+                    }
+                }
 
             }
         });
@@ -185,10 +192,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         db.collection("users").document(userUID).addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
             public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
-                if (value.getData() == null){
-                    usuario = new Usuario(user.getDisplayName(),user.getPhotoUrl().toString());
+                if (value.getData() == null) {
+                    usuario = new Usuario(user.getUid(),user.getDisplayName(), user.getPhotoUrl().toString());
                     db.collection("users").document(userUID).set(usuario);
-                }else{
+                } else {
                     usuario = value.toObject(Usuario.class);
                 }
             }
@@ -218,18 +225,18 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         switch (item.getItemId()) {
             case R.id.navigation_home:
                 getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.flMainLayout, HomeFragment.getInstance(posts)).addToBackStack(null)
+                        .replace(R.id.flMainLayout, HomeFragment.getInstance(posts, MainActivity.this)).addToBackStack(null)
                         .commit();
 
                 return true;
             case R.id.navigation_search:
                 getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.flMainLayout, SearchFragment.getInstance()).addToBackStack(null)
+                        .replace(R.id.flMainLayout, SearchFragment.getInstance(posts)).addToBackStack(null)
                         .commit();
                 return true;
             case R.id.navigation_upload:
                 Intent i = new Intent(MainActivity.this, ActivityNewPost.class);
-                i.putExtra("userID",userUID);
+                i.putExtra("userID", userUID);
                 startActivity(i);
                 return true;
             case R.id.navigation_messages:
@@ -243,4 +250,46 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
 
+    public void cargarNavigation() {
+
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        bottomNavigation = findViewById(R.id.bottom_navigation);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawer.addDrawerListener(toggle);
+        toggle.syncState();
+        NavigationView navigationView = findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                switch (item.getItemId()) {
+                    case R.id.nav_saved:
+                        getSupportFragmentManager().beginTransaction()
+                                .replace(R.id.flMainLayout, HomeFragment.getInstance(posts, MainActivity.this)).addToBackStack(null)
+                                .commit();
+                        return true;
+                    case R.id.nav_history:
+
+                        return true;
+                    case R.id.nav_comunidad:
+                        //openFragment(NotificationFragment.newInstance("", ""));
+                        return true;
+                }
+                DrawerLayout drawer = findViewById(R.id.drawer_layout);
+                drawer.closeDrawer(GravityCompat.START);
+                return false;
+            }
+        });
+        bottomNavigation.setOnNavigationItemSelectedListener(this);
+
+    }
+
+
+    @Override
+    public void onRefresh() {
+        descargarDatos();
+
+    }
 }

@@ -5,7 +5,15 @@
               android:layout_height="match_parent"
               tools:context=".fragments.HomeFragment"
 >
-    <androidx.recyclerview.widget.RecyclerView
+
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+            android:id="@+id/srlHome"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" android:id="@+id/rvItemPosts"/>
+            android:layout_height="match_parent">
+
+        <androidx.recyclerview.widget.RecyclerView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" android:id="@+id/rvItemPosts"/>
+
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 </LinearLayout>

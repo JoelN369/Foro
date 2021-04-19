@@ -1,9 +1,6 @@
-package com.joelnemi.foro;
+package com.joelnemi.foro.adapters;
 
 import android.content.Context;
-import android.content.res.ColorStateList;
-import android.graphics.Color;
-import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,6 +19,10 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.joelnemi.foro.models.Post;
+import com.joelnemi.foro.R;
+import com.joelnemi.foro.models.Usuario;
+import com.joelnemi.foro.listeners.IOnClickPostListener;
 import com.joelnemi.foro.utils.Lib;
 
 import java.util.ArrayList;

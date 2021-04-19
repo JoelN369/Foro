@@ -1,11 +1,7 @@
 package com.joelnemi.foro.utils;
 
-import androidx.annotation.Nullable;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.EventListener;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.joelnemi.foro.Usuario;
+
+import com.joelnemi.foro.models.Usuario;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -16,12 +12,10 @@ public class Lib {
 
     private static Usuario usuario;
     public static String getTimeElapsed(Date fechaP){
-        String fecha = "";
+        String fecha = "Ahora";
         Date fechaActual = new Date();
 
-
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
-        sdf.setTimeZone(TimeZone.getTimeZone("CET"));
+        SimpleDateFormat sdf;
 
         Calendar calPost = Calendar.getInstance(TimeZone.getTimeZone("CET"));
         calPost.setTime(fechaP);
@@ -30,8 +24,13 @@ public class Lib {
 
         Long millis = calNow.getTimeInMillis() - calPost.getTimeInMillis();
 
+
+        if ((millis - 1000) > 0) {
+            fecha = "Ahora";
+        }
+
         if ((millis - 60000) > 0) {
-            fecha = ((millis - 60000) / 60000) + "min";
+            fecha = (((millis - 60000) / 60000)+1) + "min";
         }
 
         if ((millis - 3600000) > 0) {
@@ -41,9 +40,6 @@ public class Lib {
             sdf = new SimpleDateFormat("dd/MM/yyyy");
             fecha = sdf.format(fechaP);
         }
-
-        if (fecha.equals(""))
-            fecha = sdf.format(fechaP);
 
         return fecha;
     }
