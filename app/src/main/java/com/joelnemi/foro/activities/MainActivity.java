@@ -43,6 +43,7 @@ import com.joelnemi.foro.LoadingDialog;
 import com.joelnemi.foro.R;
 import com.joelnemi.foro.fragments.HomeFragment;
 import com.joelnemi.foro.fragments.SearchFragment;
+import com.joelnemi.foro.listeners.IPerfilClickListener;
 import com.joelnemi.foro.listeners.IRefreshListener;
 import com.joelnemi.foro.models.Comentario;
 import com.joelnemi.foro.models.Post;
@@ -54,7 +55,7 @@ import java.util.*;
 
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener,
-        BottomNavigationView.OnNavigationItemSelectedListener, IRefreshListener {
+        BottomNavigationView.OnNavigationItemSelectedListener, IRefreshListener, IPerfilClickListener {
 
     BottomNavigationView bottomNavigation;
     private FirebaseAuth mAuth;
@@ -185,7 +186,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         //Si estamos en main activity y se ejecuta en el fragment Home
                         if (isMainActivityRunnning) {
                             getSupportFragmentManager().beginTransaction()
-                                    .replace(R.id.flMainLayout, HomeFragment.getInstance(posts, MainActivity.this)).addToBackStack(null)
+                                    .replace(R.id.flMainLayout,
+                                            HomeFragment.getInstance(posts,
+                                                    MainActivity.this, MainActivity.this)).
+                                    addToBackStack(null)
                                     .commit();
                             bottomNavigation.setSelectedItemId(R.id.navigation_home);
 
@@ -251,14 +255,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         switch (item.getItemId()) {
             case R.id.navigation_home:
                 getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.flMainLayout, HomeFragment.getInstance(posts, MainActivity.this))
+                        .replace(R.id.flMainLayout, HomeFragment.getInstance(posts,
+                                MainActivity.this, MainActivity.this))
                         .addToBackStack(null)
                         .commit();
 
                 return true;
             case R.id.navigation_search:
                 getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.flMainLayout, SearchFragment.getInstance(posts)).addToBackStack(null)
+                        .replace(R.id.flMainLayout, SearchFragment.getInstance(posts, this)).addToBackStack(null)
                         .addToBackStack(null)
                         .commit();
 
@@ -354,5 +359,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         }
                     }
                 });
+    }
+
+    @Override
+    public void onPerfilSelected(Usuario user) {
+        Intent iProfile = new Intent(MainActivity.this, ProfileActivity.class);
+        iProfile.putExtra("usuario", user);
+        startActivity(iProfile);
     }
 }

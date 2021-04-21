@@ -14,6 +14,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.*;
 import com.joelnemi.foro.adapters.AdaptadorPosts;
 import com.joelnemi.foro.listeners.IOnClickPostListener;
+import com.joelnemi.foro.listeners.IPerfilClickListener;
 import com.joelnemi.foro.models.Post;
 import com.joelnemi.foro.R;
 import com.joelnemi.foro.models.Usuario;
@@ -29,6 +30,7 @@ public class SavedActivity extends AppCompatActivity implements IOnClickPostList
     private Usuario usuario;
 
     private ArrayList<Post> postsGuardados;
+    private IPerfilClickListener listenerPerfil;
 
 
     @Override
@@ -43,12 +45,15 @@ public class SavedActivity extends AppCompatActivity implements IOnClickPostList
         if (savedInstanceState == null) {
             Bundle extras = getIntent().getExtras();
             if (extras == null) {
+                listenerPerfil = null;
                 usuario = null;
             } else {
                 usuario = (Usuario) extras.getSerializable("usuario");
+                listenerPerfil = (IPerfilClickListener) extras.getSerializable("listener");
             }
         } else {
             usuario = (Usuario) savedInstanceState.getSerializable("usuario");
+            listenerPerfil = (IPerfilClickListener) savedInstanceState.getSerializable("listener");
         }
 
         //Asigno la toolbar, le asigno el titulo y el icono para volver atras
@@ -94,7 +99,7 @@ public class SavedActivity extends AppCompatActivity implements IOnClickPostList
 
                             if (finalI == usuario.getIdsPostsGuardados().size() - 1) {
                                 adaptador = new AdaptadorPosts(SavedActivity.this, postsGuardados,
-                                        SavedActivity.this);
+                                        SavedActivity.this,listenerPerfil);
                                 rvListado.setAdapter(adaptador);
 
                                 rvListado.setLayoutManager(new LinearLayoutManager(

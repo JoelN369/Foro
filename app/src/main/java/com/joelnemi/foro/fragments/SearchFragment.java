@@ -23,6 +23,7 @@ import com.joelnemi.foro.activities.DetalleActivity;
 import com.joelnemi.foro.adapters.AdaptadorOpciones;
 import com.joelnemi.foro.adapters.AdaptadorPosts;
 import com.joelnemi.foro.listeners.IOnClickPostListener;
+import com.joelnemi.foro.listeners.IPerfilClickListener;
 import com.joelnemi.foro.listeners.IRefreshListener;
 import com.joelnemi.foro.models.Post;
 
@@ -38,6 +39,7 @@ public class SearchFragment extends Fragment implements IOnClickPostListener {
     private Spinner spOrder;
 
     private static ArrayList<Post> posts;
+    private static IPerfilClickListener listenerPerfil;
 
     //Estos 2 arrays estan ligados, el primero muestra al usuario como ordenar los post mostrados
     // y el segundo es la palabra del atributo de la clase por la que se ordena en firebase
@@ -51,9 +53,11 @@ public class SearchFragment extends Fragment implements IOnClickPostListener {
      * @param post Los post que se mostraran en el Recicler
      * @return El fragment
      */
-    public static SearchFragment getInstance(ArrayList<Post> post) {
+    public static SearchFragment getInstance(ArrayList<Post> post, IPerfilClickListener listenerP) {
         if (fragment == null) {
             fragment = new SearchFragment();
+            listenerPerfil = listenerP;
+
         }
 
         posts = post;
@@ -79,7 +83,7 @@ public class SearchFragment extends Fragment implements IOnClickPostListener {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        adaptador = new AdaptadorPosts(getContext(), posts,this);
+        adaptador = new AdaptadorPosts(getContext(), posts,this, listenerPerfil);
         rvListado.setAdapter(adaptador);
         rvListado.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false));
         rvListado.addItemDecoration(new DividerItemDecoration(rvListado.getContext(), DividerItemDecoration.VERTICAL));
@@ -144,7 +148,7 @@ public class SearchFragment extends Fragment implements IOnClickPostListener {
                 posts = (ArrayList<Post>) value.toObjects(Post.class);
                 Log.d("postjoel", value.getDocuments().toString());
 
-                adaptador = new AdaptadorPosts(getContext(), posts,SearchFragment.this);
+                adaptador = new AdaptadorPosts(getContext(), posts,SearchFragment.this,listenerPerfil);
                 rvListado.setAdapter(adaptador);
                 rvListado.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false));
                 rvListado.addItemDecoration(new DividerItemDecoration(rvListado.getContext(), DividerItemDecoration.VERTICAL));

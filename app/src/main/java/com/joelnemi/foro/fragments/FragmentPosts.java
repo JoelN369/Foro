@@ -19,7 +19,9 @@ import com.joelnemi.foro.R;
 import com.joelnemi.foro.activities.DetalleActivity;
 import com.joelnemi.foro.adapters.AdaptadorPosts;
 import com.joelnemi.foro.listeners.IOnClickPostListener;
+import com.joelnemi.foro.listeners.IPerfilClickListener;
 import com.joelnemi.foro.models.Post;
+import com.joelnemi.foro.models.Usuario;
 
 import java.util.ArrayList;
 
@@ -30,6 +32,7 @@ public class FragmentPosts extends Fragment implements IOnClickPostListener {
     private RecyclerView rvListado;
     private AdaptadorPosts adaptador;
     private ArrayList<Post> posts;
+    private IPerfilClickListener listenerPerfil;
 
 
     @Nullable
@@ -37,6 +40,20 @@ public class FragmentPosts extends Fragment implements IOnClickPostListener {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_home, container, false);
+
+
+        //Compruebo si el bundle es nulo y si contiene extras y las guardo
+        if (savedInstanceState == null) {
+            Bundle extras = getArguments();
+            if(extras == null) {
+                listenerPerfil = null;
+            } else {
+                listenerPerfil = (IPerfilClickListener) extras.getSerializable("listener");
+            }
+        } else {
+            listenerPerfil = (IPerfilClickListener) savedInstanceState.getSerializable("listener");
+        }
+
 
         rvListado = v.findViewById(R.id.rvItemPosts);
 
@@ -51,7 +68,7 @@ public class FragmentPosts extends Fragment implements IOnClickPostListener {
             public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
                 posts = (ArrayList<Post>) value.toObjects(Post.class);
                 Log.d("postjoel", value.getDocuments().toString());
-                adaptador = new AdaptadorPosts(getContext(), posts, FragmentPosts.this);
+                adaptador = new AdaptadorPosts(getContext(), posts, FragmentPosts.this, listenerPerfil);
                 rvListado.setAdapter(adaptador);
                 rvListado.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false));
                 rvListado.addItemDecoration(new DividerItemDecoration(rvListado.getContext(), DividerItemDecoration.VERTICAL));

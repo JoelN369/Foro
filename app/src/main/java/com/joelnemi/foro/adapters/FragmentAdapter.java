@@ -8,14 +8,16 @@ import androidx.fragment.app.FragmentPagerAdapter;
 import com.joelnemi.foro.fragments.FragmentAbout;
 import com.joelnemi.foro.fragments.FragmentComments;
 import com.joelnemi.foro.fragments.FragmentPosts;
+import com.joelnemi.foro.listeners.IPerfilClickListener;
 
 public class FragmentAdapter extends FragmentPagerAdapter {
     private int N_PAGES = 3;
     Context context;
-
-    public FragmentAdapter(FragmentManager fm, int behavior, Context context) {
+    IPerfilClickListener listenerPerfil;
+    public FragmentAdapter(FragmentManager fm, int behavior, Context context, IPerfilClickListener listenerPerfil) {
         super(fm, behavior);
         this.context = context;
+        this.listenerPerfil = listenerPerfil;
     }
 
     @Override
@@ -27,6 +29,7 @@ public class FragmentAdapter extends FragmentPagerAdapter {
                 FragmentPosts fragment = new FragmentPosts();
                 Bundle args = new Bundle();
                 args.putInt(FragmentPosts.ARG_FRAGMENT, position + 1);
+                args.putSerializable("listener", listenerPerfil);
                 fragment.setArguments(args);
                 return fragment;
             case 1:

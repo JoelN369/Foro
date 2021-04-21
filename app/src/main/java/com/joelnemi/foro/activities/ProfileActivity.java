@@ -19,6 +19,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.joelnemi.foro.*;
 import com.joelnemi.foro.adapters.FragmentAdapter;
 import com.joelnemi.foro.listeners.IComentClickListener;
+import com.joelnemi.foro.listeners.IPerfilClickListener;
 import com.joelnemi.foro.models.Comentario;
 import com.joelnemi.foro.models.Post;
 import com.joelnemi.foro.models.Usuario;
@@ -34,6 +35,7 @@ public class ProfileActivity extends AppCompatActivity {
     private ImageView ivUserPhoto;
     private ViewPager mViewPager;
     private FragmentAdapter adapter;
+    private IPerfilClickListener listenerPerfil;
 
 
 
@@ -43,16 +45,19 @@ public class ProfileActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
 
-        //Compruebo si el bundle es nulo y si contiene extras y las guardo
+        //Compruebo de que tenga el Bundle y guardo el userUID en una variable
         if (savedInstanceState == null) {
             Bundle extras = getIntent().getExtras();
-            if(extras == null) {
+            if (extras == null) {
+                listenerPerfil = null;
                 usuario = null;
             } else {
                 usuario = (Usuario) extras.getSerializable("usuario");
+                listenerPerfil = (IPerfilClickListener) extras.getSerializable("listener");
             }
         } else {
             usuario = (Usuario) savedInstanceState.getSerializable("usuario");
+            listenerPerfil = (IPerfilClickListener) savedInstanceState.getSerializable("listener");
         }
 
         final Toolbar toolbar = findViewById(R.id.toolbarProfile);
@@ -93,7 +98,7 @@ public class ProfileActivity extends AppCompatActivity {
         ivUserPhoto = findViewById(R.id.ivFotoPerfil);
         tvNameUser = findViewById(R.id.tvName);
         adapter = new FragmentAdapter(getSupportFragmentManager(),
-                FragmentStatePagerAdapter.BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT,this);
+                FragmentStatePagerAdapter.BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT,this, listenerPerfil);
         mViewPager = findViewById(R.id.container);
         mViewPager.setAdapter(adapter);
 

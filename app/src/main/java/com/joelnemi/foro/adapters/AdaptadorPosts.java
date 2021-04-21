@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -25,6 +26,7 @@ import com.google.firebase.firestore.*;
 import com.joelnemi.foro.LoadingDialog;
 import com.joelnemi.foro.activities.MainActivity;
 import com.joelnemi.foro.fragments.FragmentPosts;
+import com.joelnemi.foro.listeners.IPerfilClickListener;
 import com.joelnemi.foro.models.Post;
 import com.joelnemi.foro.R;
 import com.joelnemi.foro.models.Usuario;
@@ -41,19 +43,22 @@ public class AdaptadorPosts extends RecyclerView.Adapter<AdaptadorPosts.PostView
     private Context context;
     private int position;
     private IOnClickPostListener listener;
+    private IPerfilClickListener listenerPerfil;
 
 
-    public AdaptadorPosts(Context context, ArrayList<Post> posts, IOnClickPostListener listener) {
+    public AdaptadorPosts(Context context, ArrayList<Post> posts, IOnClickPostListener listener,
+                          IPerfilClickListener listenerPerfil) {
         this.context = context;
         this.posts = posts;
         this.listener = listener;
+        this.listenerPerfil = listenerPerfil;
     }
 
     @NonNull
     @Override
     public PostViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
         View itemView = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.item_post, viewGroup, false);
-        PostViewHolder viewHolder = new PostViewHolder(itemView, context, listener);
+        PostViewHolder viewHolder = new PostViewHolder(itemView, context, listener, listenerPerfil);
         return viewHolder;
     }
 
@@ -100,13 +105,16 @@ public class AdaptadorPosts extends RecyclerView.Adapter<AdaptadorPosts.PostView
         private ImageView ivUp;
         private ImageView ivDown;
         private ImageView ivSave;
+        private LinearLayout llPerfil;
+        private IPerfilClickListener listenerPerfil;
 
 
 
-        public PostViewHolder(View itemView, Context context, IOnClickPostListener listener) {
+        public PostViewHolder(View itemView, Context context, IOnClickPostListener listener, IPerfilClickListener listenerPerfil) {
             super(itemView);
             this.context = context;
             this.listener = listener;
+            this.listenerPerfil = listenerPerfil;
 
             tvParrafo = itemView.findViewById(R.id.tvParrafo);
             tvnombrePerfil = itemView.findViewById(R.id.tvNombrePerfil);
@@ -120,6 +128,7 @@ public class AdaptadorPosts extends RecyclerView.Adapter<AdaptadorPosts.PostView
             ivPhotoProfile = itemView.findViewById(R.id.ivFotoPerfilPost);
             ivFoto = itemView.findViewById(R.id.ivFoto);
             ivSave = itemView.findViewById(R.id.ivSavePost);
+            llPerfil = itemView.findViewById(R.id.llPerfil);
 
 
 
@@ -177,6 +186,13 @@ public class AdaptadorPosts extends RecyclerView.Adapter<AdaptadorPosts.PostView
                 String fecha = Lib.getTimeElapsed(post.getFechaPost());
 
                 tvDate.setText(fecha);
+
+                llPerfil.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        listenerPerfil.onPerfilSelected(user);
+                    }
+                });
 
                 bMessage.setOnClickListener(new View.OnClickListener() {
                     @Override

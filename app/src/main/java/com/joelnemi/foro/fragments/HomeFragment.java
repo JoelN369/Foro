@@ -15,6 +15,7 @@ import com.joelnemi.foro.*;
 import com.joelnemi.foro.activities.DetalleActivity;
 import com.joelnemi.foro.adapters.AdaptadorPosts;
 import com.joelnemi.foro.listeners.IOnClickPostListener;
+import com.joelnemi.foro.listeners.IPerfilClickListener;
 import com.joelnemi.foro.listeners.IRefreshListener;
 import com.joelnemi.foro.models.Post;
 
@@ -30,6 +31,7 @@ public class HomeFragment extends Fragment implements IOnClickPostListener {
     private AdaptadorPosts adaptador;
     private SwipeRefreshLayout srlHome;
     private static IRefreshListener listener;
+    private static IPerfilClickListener listenerPerfil;
 
 
     private static ArrayList<Post> posts;
@@ -37,10 +39,12 @@ public class HomeFragment extends Fragment implements IOnClickPostListener {
     private HomeFragment() {
     }
 
-    public static HomeFragment getInstance(ArrayList<Post> post, IRefreshListener listenerP) {
+    public static HomeFragment getInstance(ArrayList<Post> post, IRefreshListener listenerP,
+                                           IPerfilClickListener listenerPerfil1) {
         if (fragment == null) {
             fragment = new HomeFragment();
             listener = listenerP;
+            listenerPerfil = listenerPerfil1;
 
         }
 
@@ -76,7 +80,7 @@ public class HomeFragment extends Fragment implements IOnClickPostListener {
         super.onActivityCreated(savedInstanceState);
 
         //Creo el recicler view con los posts
-        adaptador = new AdaptadorPosts(getContext(), posts,this);
+        adaptador = new AdaptadorPosts(getContext(), posts,this, listenerPerfil);
         rvListado.setAdapter(adaptador);
         rvListado.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false));
         rvListado.addItemDecoration(new DividerItemDecoration(rvListado.getContext(), DividerItemDecoration.VERTICAL));

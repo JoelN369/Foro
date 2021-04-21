@@ -20,7 +20,7 @@
             android:background="#2B2B2B">
         <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content" android:id="@+id/llPerfil">
             <ImageView
                     android:layout_width="50dp"
                     android:layout_height="50dp" tools:srcCompat="@tools:sample/avatars"
