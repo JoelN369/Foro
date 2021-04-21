@@ -3,13 +3,12 @@
 >
 > Sigue en desarrollo
 >
->Imagenes de la aplicacion
+>Imagenes de la aplicacion:
 
-<!-- ![Captura 1](library/Captura1_Foro.jpg)(width = 300px)" -->
 
-> Captura 1
+<img src="/library/Captura1_Foro.jpg" width="250" title="Captura 1">
+<img src="/library/Captura2_Foro.jpg" width="250" title="Captura 2">
+<img src="/library/Captura3_Foro.jpg" width="250" title="Captura 3">
+<img src="/library/Captura4_Foro.jpg" width="250" title="Captura 4">
 
-<img src="/library/Captura1_Foro.jpg" width="350" title="Captura 1">
-
-<img src="/library/Captura1_Foro.jpg" width = 300px>
 
