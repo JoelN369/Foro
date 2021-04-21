@@ -57,6 +57,7 @@ public class HomeFragment extends Fragment implements IOnClickPostListener {
                              Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_home, container, false);
 
+        //Inicializo los componentes graficos
         rvListado = v.findViewById(R.id.rvItemPosts);
         srlHome = v.findViewById(R.id.srlHome);
         srlHome.setColorSchemeResources(R.color.colorAccent, R.color.colorPrimary, android.R.color.holo_green_light);
@@ -74,6 +75,7 @@ public class HomeFragment extends Fragment implements IOnClickPostListener {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
+        //Creo el recicler view con los posts
         adaptador = new AdaptadorPosts(getContext(), posts,this);
         rvListado.setAdapter(adaptador);
         rvListado.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false));
@@ -81,6 +83,10 @@ public class HomeFragment extends Fragment implements IOnClickPostListener {
 
     }
 
+    /**
+     * Cuando seleccione un post entrara en el detalle
+     * @param post
+     */
     @Override
     public void onUpdateSelected(Post post) {
         Intent i = new Intent(getContext(), DetalleActivity.class);

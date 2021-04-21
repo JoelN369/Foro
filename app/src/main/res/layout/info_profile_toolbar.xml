@@ -30,5 +30,7 @@
             android:text="Crear Avatar"
             android:background="@drawable/border_button"
             android:layout_width="match_parent"
+            android:backgroundTint="@null"
+            app:backgroundTint="@null"
             android:layout_height="wrap_content" android:id="@+id/bChangeFoto" android:layout_marginBottom="10dp"/>
 </LinearLayout>

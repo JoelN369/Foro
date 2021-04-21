@@ -32,13 +32,11 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class FragmentComments extends Fragment implements IOnClickPostListener, IComentClickListener {
+public class FragmentComments extends Fragment implements IComentClickListener {
     public static String ARG_FRAGMENT = "com.joelnemi.Foro.TAB";
 
 
     private RecyclerView rvListado;
-    private AdaptadorPosts adaptador;
-    private ArrayList<Post> posts;
 
 
     @Nullable
@@ -55,6 +53,7 @@ public class FragmentComments extends Fragment implements IOnClickPostListener, 
         FirebaseUser user = mAuth.getCurrentUser();
 
 
+        //Guardo los comentarios del usuario registrado y los muestro en un recicler view
         db.collection("users").document(user.getUid()).get()
                 .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                     @Override
@@ -74,30 +73,15 @@ public class FragmentComments extends Fragment implements IOnClickPostListener, 
                     }
                 });
 
-
         return v;
 
     }
 
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
 
-    }
-
-
-    public void descargarDatos() {
-
-
-    }
-
-    @Override
-    public void onUpdateSelected(Post post) {
-        Intent i = new Intent(getContext(), DetalleActivity.class);
-        i.putExtra("post", post);
-        startActivity(i);
-    }
-
+    /**
+     * Cuando el usuario seleccione un comentario le llevara al post donde lo comento
+     * @param post
+     */
     @Override
     public void comentarioSeleccionado(Post post) {
         Intent i = new Intent(getActivity(), DetalleActivity.class);

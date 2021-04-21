@@ -35,41 +35,42 @@ public class SearchFragment extends Fragment implements IOnClickPostListener {
 
     private RecyclerView rvListado;
     private AdaptadorPosts adaptador;
-    private SwipeRefreshLayout srlHome;
-    private static IRefreshListener listener;
     private Spinner spOrder;
 
     private static ArrayList<Post> posts;
+
+    //Estos 2 arrays estan ligados, el primero muestra al usuario como ordenar los post mostrados
+    // y el segundo es la palabra del atributo de la clase por la que se ordena en firebase
     private static final String[] OPCIONES_SPINNER = {"Recientes", "Más Valorados","Hot"};
-    private static final String[] OPCIONES_ORDER = {"fechaPost", "valoracion","valoracion"};
+    private static final String[] OPCIONES_ORDER = {"fechaPost", "valoracion", "valoracion"};
 
 
-
-
+    /**
+     * Guardo una Instancia para que cuando se mueva por el menu de abajo no se creen
+     * instancias cada vez que cambia de fragment
+     * @param post Los post que se mostraran en el Recicler
+     * @return El fragment
+     */
     public static SearchFragment getInstance(ArrayList<Post> post) {
         if (fragment == null) {
             fragment = new SearchFragment();
-
-
         }
 
         posts = post;
         return fragment;
     }
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
 
-    }
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_search, container, false);
 
+        //Inicializo los componentes visuales
         rvListado = v.findViewById(R.id.rvItemPosts);
         spOrder = v.findViewById(R.id.spOrden);
 
+        //Lleno el spinner con las opciones
         llenarSpinner();
 
         return v;
@@ -85,6 +86,11 @@ public class SearchFragment extends Fragment implements IOnClickPostListener {
 
     }
 
+
+    /**
+     * Cuando seleccione un post entrara en el detalle
+     * @param post
+     */
     @Override
     public void onUpdateSelected(Post post) {
         Intent i = new Intent(getContext(), DetalleActivity.class);
@@ -92,12 +98,14 @@ public class SearchFragment extends Fragment implements IOnClickPostListener {
         startActivity(i);
     }
 
+
+    /**
+     * LLeno los valores al spinner y le asigno un listener
+     */
     public void llenarSpinner() {
 
-
-
         ArrayList<String> opciones =
-                new ArrayList<String>(Arrays.asList(OPCIONES_SPINNER));
+                new ArrayList(Arrays.asList(OPCIONES_SPINNER));
 
         ArrayAdapter<String> adapterCategoria = new AdaptadorOpciones(getContext(),
                 android.R.layout.simple_dropdown_item_1line, opciones);
@@ -120,6 +128,12 @@ public class SearchFragment extends Fragment implements IOnClickPostListener {
         });
     }
 
+
+    /**
+     * Cuando le de a alguna opcion del spinner enviara la posicion a este metodo y
+     * mostrara el listado de post ordenados segun la opcion del spinner
+     * @param position
+     */
     public void actualizarListado(int position){
 
         FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -137,9 +151,6 @@ public class SearchFragment extends Fragment implements IOnClickPostListener {
 
             }
         });
-
-
-
 
     }
 

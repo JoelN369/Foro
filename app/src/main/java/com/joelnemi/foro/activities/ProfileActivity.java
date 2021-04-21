@@ -89,6 +89,7 @@ public class ProfileActivity extends AppCompatActivity {
             }
         }
 
+        //Inicializo los components graficos
         ivUserPhoto = findViewById(R.id.ivFotoPerfil);
         tvNameUser = findViewById(R.id.tvName);
         adapter = new FragmentAdapter(getSupportFragmentManager(),
@@ -117,6 +118,10 @@ public class ProfileActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * Cuando le da al icono de la toolbar vuelve atras
+     * @return
+     */
     @Override
     public boolean onSupportNavigateUp() {
         onBackPressed();

@@ -47,6 +47,7 @@ import com.joelnemi.foro.listeners.IRefreshListener;
 import com.joelnemi.foro.models.Comentario;
 import com.joelnemi.foro.models.Post;
 import com.joelnemi.foro.models.Usuario;
+import org.jetbrains.annotations.NotNull;
 
 
 import java.util.*;
@@ -64,7 +65,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private String userUID;
     private Usuario usuario;
     private boolean isMainActivityRunnning;
-
 
 
     @Override
@@ -124,7 +124,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         //Cuando vuelven a esta activity desde otra el booleano se vuelve true y se selecciona en el menu
         // de abajo la pestaña Home
         isMainActivityRunnning = true;
-        if (bottomNavigation.getSelectedItemId() != R.id.navigation_home){
+        if (bottomNavigation.getSelectedItemId() != R.id.navigation_home) {
             bottomNavigation.setSelectedItemId(R.id.navigation_home);
         }
 
@@ -140,7 +140,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     /**
-     *  Sign in con Google
+     * Sign in con Google
+     *
      * @param idToken
      */
     private void firebaseAuthWithGoogle(String idToken) {
@@ -173,42 +174,25 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         LoadingDialog loadingDialog = LoadingDialog.getInstance(MainActivity.this);
         loadingDialog.startDialog();
 
-        db.collection("Posts").orderBy("fechaPost", Query.Direction.DESCENDING).addSnapshotListener(new EventListener<QuerySnapshot>() {
-            @Override
-            public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+        db.collection("Posts").orderBy("fechaPost", Query.Direction.DESCENDING).get().
+                addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull @NotNull Task<QuerySnapshot> task) {
 
-                //Guarfdo los post en un Array List para pasarlo a un Fragment
-                posts = (ArrayList<Post>) value.toObjects(Post.class);
-                Log.d("postjoel", value.getDocuments().toString());
+                        //Guarfdo los post en un Array List para pasarlo a un Fragment
+                        posts = (ArrayList<Post>) task.getResult().toObjects(Post.class);
 
-
-                //Para revisar
-                //Si estamos en main activity y se ejecuta el fragment Home
-                if (isMainActivityRunnning) {
-                    Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.flMainLayout);
-                    if (currentFragment instanceof HomeFragment) {
-                        HomeFragment hf = (HomeFragment) currentFragment;
-                        SwipeRefreshLayout srlHome = hf.getView().findViewById(R.id.srlHome);
-                        if (srlHome.isRefreshing()){
-                            srlHome.setRefreshing(false);
-                        }
-                        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-                        fragmentTransaction.detach(currentFragment);
-                        fragmentTransaction.attach(currentFragment);
-                        fragmentTransaction.commit();
-                        bottomNavigation.setSelectedItemId(R.id.navigation_home);
-                    } else {
-                        if (!(currentFragment instanceof SearchFragment)) {
+                        //Si estamos en main activity y se ejecuta en el fragment Home
+                        if (isMainActivityRunnning) {
                             getSupportFragmentManager().beginTransaction()
                                     .replace(R.id.flMainLayout, HomeFragment.getInstance(posts, MainActivity.this)).addToBackStack(null)
                                     .commit();
                             bottomNavigation.setSelectedItemId(R.id.navigation_home);
+
+
                         }
                     }
-                }
-
-            }
-        });
+                });
 
 
     }
@@ -217,6 +201,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     /**
      * Comprueba si el usuario registrado esta en la BBDD si no lo esta crea un nuevo usuario y si esta
      * lo guarda y actualiza los datos del perfil con su nombre y foto
+     *
      * @param user El usuario registrado o logeado
      */
     public void updateUI(final FirebaseUser user) {
@@ -228,7 +213,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             @Override
             public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
                 if (value.getData() == null) {
-                    usuario = new Usuario(user.getUid(),user.getDisplayName(), user.getPhotoUrl().toString());
+                    usuario = new Usuario(user.getUid(), user.getDisplayName(), user.getPhotoUrl().toString());
                     db.collection("users").document(userUID).set(usuario);
                 } else {
                     usuario = value.toObject(Usuario.class);
@@ -332,8 +317,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         bottomNavigation.setOnNavigationItemSelectedListener(this);
 
 
-
-
     }
 
 
@@ -342,7 +325,34 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
      */
     @Override
     public void onRefresh() {
-        descargarDatos();
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("Posts").orderBy("fechaPost", Query.Direction.DESCENDING).get().
+                addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull @NotNull Task<QuerySnapshot> task) {
 
+                        //Guarfdo los post en un Array List para pasarlo a un Fragment
+                        posts = (ArrayList<Post>) task.getResult().toObjects(Post.class);
+
+
+                        //Si estamos en main activity y se ejecuta en el fragment Home
+                        if (isMainActivityRunnning) {
+                            Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.flMainLayout);
+                            if (currentFragment instanceof HomeFragment) {
+                                HomeFragment hf = (HomeFragment) currentFragment;
+                                SwipeRefreshLayout srlHome = hf.getView().findViewById(R.id.srlHome);
+                                if (srlHome.isRefreshing()) {
+                                    srlHome.setRefreshing(false);
+                                }
+                                FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+                                fragmentTransaction.detach(currentFragment);
+                                fragmentTransaction.attach(currentFragment);
+                                fragmentTransaction.commit();
+                                bottomNavigation.setSelectedItemId(R.id.navigation_home);
+                            }
+
+                        }
+                    }
+                });
     }
 }
