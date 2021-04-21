@@ -2,6 +2,7 @@ package com.joelnemi.foro.activities;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.net.Uri;
@@ -51,10 +52,12 @@ public class ActivityNewPost extends AppCompatActivity implements View.OnClickLi
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_new_post);
 
 
+        //Inicializo los atributos
         Toolbar toolbar = findViewById(R.id.toolbar_post);
         spCat = findViewById(R.id.spCat);
 
@@ -65,6 +68,8 @@ public class ActivityNewPost extends AppCompatActivity implements View.OnClickLi
         llenarSpinner();
         fotoSubida = false;
 
+
+        //Compruebo de que tenga el Bundle y guardo el userUID en una variable
         if (savedInstanceState == null) {
             Bundle extras = getIntent().getExtras();
             if(extras == null) {
@@ -76,9 +81,9 @@ public class ActivityNewPost extends AppCompatActivity implements View.OnClickLi
             userUID = savedInstanceState.getString("userID");
         }
 
+        //Asigno la toolbar, le asigno el titulo y el icono para volver atras
         if (toolbar != null) {
             setSupportActionBar(toolbar);
-
 
             final ActionBar actionBar = getSupportActionBar();
 
@@ -100,14 +105,24 @@ public class ActivityNewPost extends AppCompatActivity implements View.OnClickLi
         return true;
     }
 
+    /**
+     * Cuando le da al icono de la toolbar vuelve atras
+     * @return
+     */
     @Override
     public boolean onSupportNavigateUp() {
         onBackPressed();
         return false;
     }
+
+    /**
+     * Metodo onClick de la activity
+     * @param v
+     */
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
+            //Muestro la galeria y le permito al usuario añadir una imagen al Post
             case R.id.ibAddFoto:
                 Intent intent = new Intent();
                 intent.setType("image/*");
@@ -120,14 +135,19 @@ public class ActivityNewPost extends AppCompatActivity implements View.OnClickLi
         }
     }
 
+    /**
+     * Metodo para las opciones de la toolbar
+     * @param item
+     * @return
+     */
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 
         switch (item.getItemId()) {
+            //Cuando la foto este subida podra subir el post
             case R.id.navigation_post:
                 if (!fotoSubida) {
                     subirfoto(uri);
-                    //Toast.makeText(this,"Subiendo Foto...",Toast.LENGTH_SHORT).show();
                     return false;
                 }
                 return true;
@@ -142,34 +162,37 @@ public class ActivityNewPost extends AppCompatActivity implements View.OnClickLi
 
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-        if (etTexto.getText().equals("")||etTexto.getText() == null){
+        //No puede subir un post si no ha escrito nada
+        if (!(etTexto.getText().equals("")||etTexto.getText() == null)) {
 
-        }
+            if (fotoSubida && userUID != null) {
+                ArrayList<Comentario> comentarios = new ArrayList<>();
 
-        if (fotoSubida && userUID != null){
-            ArrayList<Comentario> comentarios = new ArrayList<>();
+                String postUID = UUID.randomUUID() + "";
 
-            String postUID = UUID.randomUUID()+"";
+                db.collection("Posts").document(postUID).set(new Post(postUID, etTexto.getText().toString(), userPhoto, 0L,
+                        comentarios, userUID, categoria, new Date())).addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void unused) {
+                        onBackPressed();
+                    }
+                });
 
-            db.collection("Posts").document(postUID).set(new Post(postUID,etTexto.getText().toString(), userPhoto, 0L,
-                comentarios, userUID, categoria, new Date())).addOnSuccessListener(new OnSuccessListener<Void>() {
-                @Override
-                public void onSuccess(Void unused) {
-                    onBackPressed();
-                }
-            });
-
+            } else {
+                Toast.makeText(this, "Problema con reconocer el Usuario", Toast.LENGTH_SHORT).show();
+            }
         }else{
-            Toast.makeText(this,"Problema con reconocer el Usuario",Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Se necesita añadir texto al Post", Toast.LENGTH_SHORT).show();
         }
 
     }
 
+    /**
+     * Relleno el Spinner con las categorias de la BBDD
+     */
     public void llenarSpinner() {
 
-
         getCategorias();
-
 
         spCat.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -177,6 +200,7 @@ public class ActivityNewPost extends AppCompatActivity implements View.OnClickLi
                 categoria = (String) parent.getItemAtPosition(position);
             }
 
+            //Predeterminadamente asigno el primer valor por defecto
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
                 categoria = (String) parent.getItemAtPosition(0);
@@ -184,6 +208,9 @@ public class ActivityNewPost extends AppCompatActivity implements View.OnClickLi
         });
     }
 
+    /**
+     * Busco en la BBDD las categorias y se las asigno al Spinner
+     */
     public void getCategorias() {
         final FirebaseFirestore db = FirebaseFirestore.getInstance();
         db.collection("categorias").addSnapshotListener(new EventListener<QuerySnapshot>() {
@@ -207,6 +234,12 @@ public class ActivityNewPost extends AppCompatActivity implements View.OnClickLi
 
     }
 
+    /**
+     * Cuando haya asignado la foto que desea subir en el post viene a este metodo y la sube a firebase
+     * @param requestCode
+     * @param resultCode
+     * @param data
+     */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -223,6 +256,11 @@ public class ActivityNewPost extends AppCompatActivity implements View.OnClickLi
             }
         }
     }
+
+    /**
+     * Sube la foto a firebase
+     * @param uri
+     */
     public void subirfoto(Uri uri){
 
         FirebaseStorage storage = FirebaseStorage.getInstance();
@@ -230,6 +268,7 @@ public class ActivityNewPost extends AppCompatActivity implements View.OnClickLi
 
         final StorageReference ref = storageRef.child("images/"+ UUID.randomUUID() +".jpg");
 
+        //Muestra un dialogo como que esta cargando hasta que se suba la imagen
         LoadingDialog loadingDialog = LoadingDialog.getInstance(this);
         loadingDialog.changeTextDialog("Subiendo Foto...");
         loadingDialog.startDialog();

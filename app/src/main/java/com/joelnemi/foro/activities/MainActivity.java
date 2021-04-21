@@ -38,6 +38,7 @@ import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.auth.*;
 import com.google.firebase.firestore.*;
 import com.google.firebase.firestore.EventListener;
+import com.joelnemi.foro.CrearCategoriaDialog;
 import com.joelnemi.foro.LoadingDialog;
 import com.joelnemi.foro.R;
 import com.joelnemi.foro.fragments.HomeFragment;
@@ -72,19 +73,23 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+
+        // Login con Google
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getString(R.string.default_web_client_id))
                 .requestEmail()
                 .build();
 
+        //Descargo los post y los muestro en la pestaña principal
         descargarDatos();
+
 
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
         Intent signInIntent = mGoogleSignInClient.getSignInIntent();
         startActivityForResult(signInIntent, RC_SIGN_IN);
-
         mAuth = FirebaseAuth.getInstance();
 
+        //Cargo el navigation y la toolbar
         cargarNavigation();
 
 
@@ -107,7 +112,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             } catch (ApiException e) {
                 // Google Sign In failed, update UI appropriately
                 Log.w(TAG, "Google sign in failed", e);
-                //updateUI(null);
+
             }
         }
     }
@@ -116,6 +121,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     protected void onResume() {
         super.onResume();
 
+        //Cuando vuelven a esta activity desde otra el booleano se vuelve true y se selecciona en el menu
+        // de abajo la pestaña Home
         isMainActivityRunnning = true;
         if (bottomNavigation.getSelectedItemId() != R.id.navigation_home){
             bottomNavigation.setSelectedItemId(R.id.navigation_home);
@@ -127,9 +134,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     protected void onStop() {
         super.onStop();
+        //Cuando se navega a otra activity este el booleano se vuelve false
+        //Este booleano sirve para control de errores al ejecutarse el listener de descargar los datos
         isMainActivityRunnning = false;
     }
 
+    /**
+     *  Sign in con Google
+     * @param idToken
+     */
     private void firebaseAuthWithGoogle(String idToken) {
         AuthCredential credential = GoogleAuthProvider.getCredential(idToken, null);
         mAuth.signInWithCredential(credential)
@@ -144,33 +157,33 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         } else {
                             // If sign in fails, display a message to the user.
                             Log.w(TAG, "signInWithCredential:failure", task.getException());
-                            //Snackbar.make(mBinding.mainLayout, "Authentication Failed.", Snackbar.LENGTH_SHORT).show();
-                            //updateUI(null);
+
                         }
                     }
                 });
     }
 
-    public void cargarDatosPrueba() {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        db.collection("Posts").add(new Post(UUID.randomUUID().toString(),"Esto es una prueba", "", 123L,
-                new ArrayList<Comentario>(), "useridPrueba", "Gatos", new Date()));
-    }
 
-
+    /**
+     * Este metodo descarga los post de la BBDD de Firebase mostrando los primeros los mas recientes
+     */
     public void descargarDatos() {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
+        //Muestro un dialogo mientras se descargan los Posts
         LoadingDialog loadingDialog = LoadingDialog.getInstance(MainActivity.this);
         loadingDialog.startDialog();
 
         db.collection("Posts").orderBy("fechaPost", Query.Direction.DESCENDING).addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+
+                //Guarfdo los post en un Array List para pasarlo a un Fragment
                 posts = (ArrayList<Post>) value.toObjects(Post.class);
                 Log.d("postjoel", value.getDocuments().toString());
 
 
-                //Collections.sort(posts);
+                //Para revisar
+                //Si estamos en main activity y se ejecuta el fragment Home
                 if (isMainActivityRunnning) {
                     Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.flMainLayout);
                     if (currentFragment instanceof HomeFragment) {
@@ -185,10 +198,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         fragmentTransaction.commit();
                         bottomNavigation.setSelectedItemId(R.id.navigation_home);
                     } else {
-                        getSupportFragmentManager().beginTransaction()
-                                .replace(R.id.flMainLayout, HomeFragment.getInstance(posts, MainActivity.this)).addToBackStack(null)
-                                .commit();
-                        bottomNavigation.setSelectedItemId(R.id.navigation_home);
+                        if (!(currentFragment instanceof SearchFragment)) {
+                            getSupportFragmentManager().beginTransaction()
+                                    .replace(R.id.flMainLayout, HomeFragment.getInstance(posts, MainActivity.this)).addToBackStack(null)
+                                    .commit();
+                            bottomNavigation.setSelectedItemId(R.id.navigation_home);
+                        }
                     }
                 }
 
@@ -199,6 +214,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
 
+    /**
+     * Comprueba si el usuario registrado esta en la BBDD si no lo esta crea un nuevo usuario y si esta
+     * lo guarda y actualiza los datos del perfil con su nombre y foto
+     * @param user El usuario registrado o logeado
+     */
     public void updateUI(final FirebaseUser user) {
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         userUID = user.getUid();
@@ -216,12 +236,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }
         });
 
-
+        // inicializo las variables
         ImageView ivFoto = findViewById(R.id.ivFotoPerfil);
         TextView tvNombre = findViewById(R.id.tvName);
 
+        //Escribo el nombre
         tvNombre.setText(user.getDisplayName());
 
+
+        //Añado la imagen
         String url = user.getPhotoUrl().toString();
         if (user.getPhotoUrl() != null) {
             Glide.with(getBaseContext())
@@ -237,6 +260,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        //En el menu de abajo de la aplicacion segun la opcion que le de el usuario se
+        // ejecutara un fragment o un Activity
+
         switch (item.getItemId()) {
             case R.id.navigation_home:
                 getSupportFragmentManager().beginTransaction()
@@ -268,7 +294,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         return false;
     }
 
-
+    /**
+     * Cargo el navigation y la toolbar
+     */
     public void cargarNavigation() {
 
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -290,10 +318,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         startActivity(iProfile);
                         return true;
                     case R.id.nav_history:
-
+                        //Llevar a una Activity con los post valorados o guardados recientemente
                         return true;
                     case R.id.nav_comunidad:
-                        //openFragment(NotificationFragment.newInstance("", ""));
+                        // Mostrar un dialogo para crear una nueva comunidad
                         return true;
                 }
                 DrawerLayout drawer = findViewById(R.id.drawer_layout);
@@ -309,6 +337,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
 
+    /**
+     * Cuando se arrastra hacia arriba para recargar los posts
+     */
     @Override
     public void onRefresh() {
         descargarDatos();

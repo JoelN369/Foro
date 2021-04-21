@@ -59,6 +59,8 @@ public class ProfileActivity extends AppCompatActivity {
         final CollapsingToolbarLayout ctToolbar = findViewById(R.id.ctToolbarProfile);
         final AppBarLayout appBarLayout = findViewById(R.id.appbarProfile);
 
+
+        //compruebo el desplazamiento del appbar layout y muestro o no el nombre  de usuario
         appBarLayout.addOnOffsetChangedListener(new AppBarLayout.OnOffsetChangedListener() {
             @Override
             public void onOffsetChanged(AppBarLayout appBarLayout, int verticalOffset) {
@@ -72,7 +74,7 @@ public class ProfileActivity extends AppCompatActivity {
         });
 
 
-
+        //Asigno la toolbar, le asigno el titulo y el icono para volver atras
         if (toolbar != null) {
 
             setSupportActionBar(toolbar);

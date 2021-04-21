@@ -69,10 +69,12 @@ public class DetalleActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail_post);
 
-        final Toolbar toolbar = findViewById(R.id.toolBarDetail);
 
+        final Toolbar toolbar = findViewById(R.id.toolBarDetail);
         final NestedScrollView scrollView = findViewById(R.id.svDetalle);
 
+
+        //Asigno la toolbar, le asigno el titulo y el icono para volver atras
         if (toolbar != null) {
             setSupportActionBar(toolbar);
 
@@ -122,6 +124,8 @@ public class DetalleActivity extends AppCompatActivity {
 
         final FirebaseFirestore db = FirebaseFirestore.getInstance();
 
+
+        //Busco al usuario y relleno los datos del post
         db.collection("users").document(post.getUser()).get()
                 .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
@@ -145,7 +149,8 @@ public class DetalleActivity extends AppCompatActivity {
     }
 
     /**
-     * Modifica la toolbar mostrando el nombre de usuario que subio este post
+     * Modifica la toolbar mostrando el nombre de usuario que subio este post cuando el usuario desplazo
+     * hacia abajo mas de 200 pixeles
      *
      * @param usuario
      */
@@ -177,7 +182,13 @@ public class DetalleActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * Rellena los datos del post y sus comentarios con la informacion del usuario y del post
+     * @param user el usuario que subio el post
+     * @param post El post
+     */
     public void rellenarDatos(Usuario user, final Post post) {
+
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         if (user != null) {
             tvParrafo.setText(post.getTexto());
@@ -186,8 +197,9 @@ public class DetalleActivity extends AppCompatActivity {
             tvnumComs.setText(post.getComentarios().size() + "");
             tvCategoria.setText(post.getCategoria());
 
-
             comprobaciones(user, post);
+
+            //Asigno la foto del post y del usuario
             if (post.getUrlFoto() != null)
                 if (!post.getUrlFoto().equals(""))
                     Glide.with(DetalleActivity.this)
@@ -210,6 +222,7 @@ public class DetalleActivity extends AppCompatActivity {
             tvDate.setText(fecha);
 
 
+            //Boton para guardar el post
             ivSave.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -229,6 +242,7 @@ public class DetalleActivity extends AppCompatActivity {
                 }
             });
 
+            //Boton para votar negativamente el post
             ivDown.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -241,6 +255,8 @@ public class DetalleActivity extends AppCompatActivity {
 
                 }
             });
+
+            //Boton para votar positivamente el post cambia de color el boton de votar
             ivUp.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -252,21 +268,26 @@ public class DetalleActivity extends AppCompatActivity {
                     }
                 }
             });
+
+            //Boton para enviar el comentario escrito al post
             ibSendComment.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     String comentario = etCommentText.getText().toString();
                     if (!comentario.equals("")) {
 
+                        //guardo el comentario
                         Comentario comentario1 = new Comentario(user.getUserUID(), comentario,
                                 new Date(), 0L,post.getPostUID());
                         post.getComentarios().add(comentario1);
 
+                        //El comentario se añade al reciclerView
                         crearReciclerView(post.getComentarios());
                         db.collection("Posts").document(post.getPostUID()).update("comentarios",
                                 post.getComentarios());
 
 
+                        //Comprueba si el usuario tiene el arraylist de post guardados vacio
                         if (user.getComentariosPublicados() == null) {
                             ArrayList<Comentario> comentarios = new ArrayList<>();
                             comentarios.add(comentario1);
@@ -292,14 +313,25 @@ public class DetalleActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * Segun el boton al que le des se añadira a un array o a otro
+     * @param post El post que esta valorando
+     * @param v El boton al que le das click
+     * @param usuario El usuario que esta votando
+     */
     public void votacion(Post post, View v, Usuario usuario){
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         ArrayList<String> postsVotadosP = usuario.getIdsPostsVotadosPositivo();
         ArrayList<String> postsVotadosN = usuario.getIdsPostsVotadosNegativo();
-        if (postsVotadosP == null && postsVotadosN == null) {
+
+        //si el usuario tiene alguno de los Arrays vacios se crea
+        if (postsVotadosP == null ) {
             postsVotadosP = new ArrayList<>();
+        }
+        if (postsVotadosN == null) {
             postsVotadosN = new ArrayList<>();
         }
+        //Si el post no esta en ningun arraylist se añade a su array coorrespondiente
         if (!postsVotadosP.contains(post.getPostUID()) && !postsVotadosN.contains(post.getPostUID())){
             Log.d("votacion",v.getId() + " " + R.id.ivDown);
             switch (v.getId()){
@@ -321,6 +353,8 @@ public class DetalleActivity extends AppCompatActivity {
 
     }
 
+
+    //Comprueba si el usuario tiene los post guardados o votados y modifica componentes visuales
     public void comprobaciones(Usuario user, Post post) {
 
         if (user.getIdsPostsGuardados().contains(post.getPostUID())) {
@@ -341,6 +375,10 @@ public class DetalleActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * Creo el recicler View con los comentarios
+     * @param comentarios los comentarios
+     */
     public void crearReciclerView(ArrayList<Comentario> comentarios) {
         adaptador = new AdaptadorComentarios(this, comentarios,null);
         rvComments.setAdapter(adaptador);
