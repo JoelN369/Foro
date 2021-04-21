@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 public class Comentario implements Serializable {
+    private String postUID;
     private String userUID;
     private String comentario;
     private Date fecha;
@@ -14,11 +15,20 @@ public class Comentario implements Serializable {
         this.fecha = new Date();
         this.valoraciones = 0L;
     }
-    public Comentario(String username, String comentario, Date fecha, Long valoraciones) {
+    public Comentario(String username, String comentario, Date fecha, Long valoraciones, String postUID) {
+        this.postUID = postUID;
         this.userUID = username;
         this.comentario = comentario;
         this.valoraciones = valoraciones;
         this.fecha = fecha;
+    }
+
+    public String getPostUID() {
+        return postUID;
+    }
+
+    public void setPostUID(String postUID) {
+        this.postUID = postUID;
     }
 
     public Date getFecha() {
@@ -56,7 +66,8 @@ public class Comentario implements Serializable {
     @Override
     public String toString() {
         return "Comentario{" +
-                "userUID='" + userUID + '\'' +
+                "postUID='" + postUID + '\'' +
+                ", userUID='" + userUID + '\'' +
                 ", comentario='" + comentario + '\'' +
                 ", fecha=" + fecha +
                 ", valoraciones=" + valoraciones +

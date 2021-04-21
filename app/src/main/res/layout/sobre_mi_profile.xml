@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+    <androidx.core.widget.NestedScrollView
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fillViewport="true">
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                      android:orientation="vertical">
+            <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" android:padding="20dp">
+                <LinearLayout
+                        android:orientation="vertical"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content" android:layout_weight="5">
+                    <TextView
+                            android:text="123"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" android:id="@+id/tvPostFama"
+                            android:layout_weight="1"/>
+                    <TextView
+                            android:text="Post Fama"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" android:id="@+id/tvPostFamaText"
+                            android:layout_weight="1"/>
+                </LinearLayout>
+                <LinearLayout
+                        android:orientation="vertical"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content" android:layout_weight="5">
+                    <TextView
+                            android:text="313"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" android:id="@+id/tvComentarioFama"
+                            android:layout_weight="1"
+                    />
+                    <TextView
+                            android:text="Comentario Fama"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" android:id="@+id/tvComentarioFamaText"
+                            android:layout_weight="1"/>
+                </LinearLayout>
+            </LinearLayout>
+            <LinearLayout
+                    android:orientation="vertical"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" android:padding="20dp">
+                <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+                    <LinearLayout
+                            android:orientation="vertical"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content" android:layout_weight="5">
+                        <TextView
+                                android:text="313"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content" android:id="@+id/tvPostsValorados"
+                                android:layout_weight="1"
+                        />
+                        <TextView
+                                android:text="Posts Valorados"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content" android:id="@+id/tvPostsValoradosText"
+                                android:layout_weight="1"/>
+                    </LinearLayout>
+                    <LinearLayout
+                            android:orientation="vertical"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content" android:layout_weight="5">
+                        <TextView
+                                android:text="123"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content" android:id="@+id/tvComentariosValorados"
+                                android:layout_weight="1"/>
+                        <TextView
+                                android:text="Comentarios Valorados"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content" android:id="@+id/tvComentariosValoradosText"
+                                android:layout_weight="1"/>
+                    </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>

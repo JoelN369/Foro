@@ -1,11 +1,13 @@
 package com.joelnemi.foro.activities;
 
 import android.content.Context;
+import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.*;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
@@ -18,6 +20,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.android.material.appbar.AppBarLayout;
+import com.google.android.material.appbar.CollapsingToolbarLayout;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -28,9 +34,12 @@ import com.joelnemi.foro.models.Comentario;
 import com.joelnemi.foro.models.Post;
 import com.joelnemi.foro.models.Usuario;
 import com.joelnemi.foro.utils.Lib;
+import org.jetbrains.annotations.NotNull;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.function.Predicate;
 
 public class DetalleActivity extends AppCompatActivity {
 
@@ -45,6 +54,7 @@ public class DetalleActivity extends AppCompatActivity {
     private ImageView bMessage;
     private ImageView ivUp;
     private ImageView ivDown;
+    private ImageView ivSave;
     private static Post post;
     private RecyclerView rvComments;
     private AdaptadorComentarios adaptador;
@@ -55,6 +65,7 @@ public class DetalleActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail_post);
 
@@ -76,6 +87,7 @@ public class DetalleActivity extends AppCompatActivity {
             }
         }
 
+
         //Inicializo los components graficos
         tvParrafo = findViewById(R.id.tvParrafo);
         tvnombrePerfil = findViewById(R.id.tvNombrePerfil);
@@ -92,35 +104,36 @@ public class DetalleActivity extends AppCompatActivity {
         ibSendComment = findViewById(R.id.ibSendComment);
         etCommentText = findViewById(R.id.etCommentText);
         svDetalle = findViewById(R.id.svDetalle);
+        ivSave = findViewById(R.id.ivSavePost);
+
 
 
         //Compruebo si el bundle es nulo y si contiene extras y las guardo
         if (savedInstanceState == null) {
             Bundle extras = getIntent().getExtras();
-            if(extras == null) {
+            if (extras == null) {
                 post = null;
             } else {
-                post= (Post) extras.getSerializable("post");
+                post = (Post) extras.getSerializable("post");
             }
         } else {
-            post= (Post) savedInstanceState.getSerializable("post");
+            post = (Post) savedInstanceState.getSerializable("post");
         }
 
         final FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-        db.collection("users").document(post.getUser()).addSnapshotListener(new EventListener<DocumentSnapshot>() {
+        db.collection("users").document(post.getUser()).get()
+                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
-            public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
-                if (value.getData() == null) {
+            public void onComplete(@NonNull @NotNull Task<DocumentSnapshot> task) {
+                DocumentSnapshot value = task.getResult();
 
-                } else {
-
-                    Usuario usuario = value.toObject(Usuario.class);
-                    rellenarDatos(usuario,post);
-                    modificarToolbar(toolbar, scrollView, usuario);
-                }
+                Usuario usuario = value.toObject(Usuario.class);
+                rellenarDatos(usuario, post);
+                modificarToolbar(scrollView, usuario);
             }
         });
+
 
 
     }
@@ -133,62 +146,58 @@ public class DetalleActivity extends AppCompatActivity {
 
     /**
      * Modifica la toolbar mostrando el nombre de usuario que subio este post
-     * @param toolbar
-     * @param scrollView
+     *
      * @param usuario
      */
-    public void modificarToolbar(final Toolbar toolbar, NestedScrollView scrollView, final Usuario usuario){
-        scrollView.setOnScrollChangeListener(new NestedScrollView.OnScrollChangeListener() {
-
+    public void modificarToolbar(NestedScrollView scrollView, Usuario usuario) {
+        scrollView.setOnScrollChangeListener(new View.OnScrollChangeListener() {
             @Override
-            public void onScrollChange(NestedScrollView v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
+            public void onScrollChange(View v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
 
                 //Si la pantalla se desplaza mas de 200 pixeles se muestra el nombre del usuario
-                if (scrollY>200) {
+                if (scrollY > 200) {
 
+                    final ActionBar actionBar = getSupportActionBar();
 
-                    if (toolbar != null) {
-
-                        final ActionBar actionBar = getSupportActionBar();
-                        if (actionBar != null) {
-                            actionBar.setTitle(usuario.getNombre());
-
-                        }
+                    if (actionBar != null && actionBar.getTitle().equals("")) {
+                        actionBar.setTitle(usuario.getNombre());
                     }
-                }else{
-                    if (toolbar != null) {
-                        final ActionBar actionBar = getSupportActionBar();
 
-                        if (actionBar != null) {
-                            actionBar.setTitle("");
-                        }
+                } else {
+                    final ActionBar actionBar = getSupportActionBar();
+
+                    if (actionBar != null && actionBar.getTitle().equals(usuario.getNombre())) {
+                        actionBar.setTitle("");
+
                     }
                 }
             }
         });
 
-    }
-    public void rellenarDatos(Usuario user, final Post post) {
-        if (user != null) {
 
+    }
+
+    public void rellenarDatos(Usuario user, final Post post) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        if (user != null) {
             tvParrafo.setText(post.getTexto());
             tvnombrePerfil.setText(user.getNombre());
             tvValoracion.setText(post.getValoracion() + "");
             tvnumComs.setText(post.getComentarios().size() + "");
             tvCategoria.setText(post.getCategoria());
-            db = FirebaseFirestore.getInstance();
 
+
+            comprobaciones(user, post);
             if (post.getUrlFoto() != null)
                 if (!post.getUrlFoto().equals(""))
-                    Glide.with(this)
+                    Glide.with(DetalleActivity.this)
                             .load(post.getUrlFoto())
                             .diskCacheStrategy(DiskCacheStrategy.ALL)
                             .thumbnail(0.1f)
                             .into(ivFoto);
-
             if (user.getFoto() != null)
                 if (!user.getFoto().equals(""))
-                    Glide.with(this)
+                    Glide.with(DetalleActivity.this)
                             .load(user.getFoto())
                             .apply(RequestOptions.circleCropTransform())
                             .diskCacheStrategy(DiskCacheStrategy.ALL)
@@ -200,38 +209,77 @@ public class DetalleActivity extends AppCompatActivity {
 
             tvDate.setText(fecha);
 
+
+            ivSave.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (!user.getIdsPostsGuardados().contains(post.getPostUID())){
+                        ArrayList<String> postGuardados = user.getIdsPostsGuardados();
+                        postGuardados.add(post.getPostUID());
+                        user.setIdsPostsGuardados(postGuardados);
+                        db.collection("users").document(user.getUserUID()).set(user);
+
+                    }else{
+                        ArrayList<String> postGuardados = user.getIdsPostsGuardados();
+                        postGuardados.removeIf(Predicate.isEqual(post.getPostUID()));
+                        user.setIdsPostsGuardados(postGuardados);
+                        db.collection("users").document(user.getUserUID()).set(user);
+
+                    }
+                }
+            });
+
             ivDown.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    ivUp.setColorFilter(ContextCompat.getColor(DetalleActivity.this, R.color.iconColor));
-                    ivDown.setColorFilter(ContextCompat.getColor(DetalleActivity.this, R.color.red));
-
+                    if (!user.getIdsPostsVotadosNegativo().contains(post.getPostUID())&&
+                            !user.getIdsPostsVotadosPositivo().contains(post.getPostUID())){
+                        votacion(post, v, user);
+                        ivUp.setColorFilter(ContextCompat.getColor(DetalleActivity.this, R.color.iconColor));
+                        ivDown.setColorFilter(ContextCompat.getColor(DetalleActivity.this, R.color.red));
+                    }
 
                 }
             });
             ivUp.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-
-                    ivDown.setColorFilter(ContextCompat.getColor(DetalleActivity.this, R.color.iconColor));
-                    ivUp.setColorFilter(ContextCompat.getColor(DetalleActivity.this, R.color.green));
-
+                    if (!user.getIdsPostsVotadosNegativo().contains(post.getPostUID())&&
+                            !user.getIdsPostsVotadosPositivo().contains(post.getPostUID())){
+                        votacion(post, v, user);
+                        ivDown.setColorFilter(ContextCompat.getColor(DetalleActivity.this, R.color.iconColor));
+                        ivUp.setColorFilter(ContextCompat.getColor(DetalleActivity.this, R.color.green));
+                    }
                 }
             });
-
             ibSendComment.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     String comentario = etCommentText.getText().toString();
                     if (!comentario.equals("")) {
-                        post.getComentarios().add(new Comentario(user.getUserUID(), comentario,
-                                new Date(), 0L));
 
+                        Comentario comentario1 = new Comentario(user.getUserUID(), comentario,
+                                new Date(), 0L,post.getPostUID());
+                        post.getComentarios().add(comentario1);
 
                         crearReciclerView(post.getComentarios());
-                        db.collection("Posts").document(post.getPostUID()).update("comentarios", post.getComentarios());
+                        db.collection("Posts").document(post.getPostUID()).update("comentarios",
+                                post.getComentarios());
 
-                        InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+
+                        if (user.getComentariosPublicados() == null) {
+                            ArrayList<Comentario> comentarios = new ArrayList<>();
+                            comentarios.add(comentario1);
+                            user.setComentariosPublicados(comentarios);
+                        }else{
+                            user.getComentariosPublicados().add(comentario1);
+                        }
+
+
+
+                        db.collection("users").document(user.getUserUID()).set(user);
+
+                        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                         svDetalle.fullScroll(NestedScrollView.FOCUS_DOWN);
                         imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
                         etCommentText.setText("");
@@ -241,10 +289,60 @@ public class DetalleActivity extends AppCompatActivity {
 
             crearReciclerView(post.getComentarios());
         }
+
     }
 
-    public void crearReciclerView(ArrayList<Comentario> comentarios){
-        adaptador = new AdaptadorComentarios(this, comentarios);
+    public void votacion(Post post, View v, Usuario usuario){
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        ArrayList<String> postsVotadosP = usuario.getIdsPostsVotadosPositivo();
+        ArrayList<String> postsVotadosN = usuario.getIdsPostsVotadosNegativo();
+        if (postsVotadosP == null && postsVotadosN == null) {
+            postsVotadosP = new ArrayList<>();
+            postsVotadosN = new ArrayList<>();
+        }
+        if (!postsVotadosP.contains(post.getPostUID()) && !postsVotadosN.contains(post.getPostUID())){
+            Log.d("votacion",v.getId() + " " + R.id.ivDown);
+            switch (v.getId()){
+                case R.id.ivDown:
+                    post.setValoracion(post.getValoracion() - 1L);
+                    db.collection("Posts").document(post.getPostUID()).set(post);
+                    postsVotadosN.add(post.getPostUID());
+                    usuario.setIdsPostsVotadosNegativo(postsVotadosN);
+                    break;
+                case R.id.ivUp:
+                    post.setValoracion(post.getValoracion() + 1L);
+                    db.collection("Posts").document(post.getPostUID()).set(post);
+                    postsVotadosP.add(post.getPostUID());
+                    usuario.setIdsPostsVotadosPositivo(postsVotadosP);
+                    break;
+            }
+            db.collection("users").document(usuario.getUserUID()).set(usuario);
+        }
+
+    }
+
+    public void comprobaciones(Usuario user, Post post) {
+
+        if (user.getIdsPostsGuardados().contains(post.getPostUID())) {
+            ivSave.setImageResource(R.drawable.ic_baseline_save);
+        } else {
+            ivSave.setImageResource(R.drawable.ic_baseline_no_save);
+        }
+
+        if (user.getIdsPostsVotadosPositivo().contains(post.getPostUID())) {
+            ivDown.setColorFilter(ContextCompat.getColor(DetalleActivity.this, R.color.iconColor));
+            ivUp.setColorFilter(ContextCompat.getColor(DetalleActivity.this, R.color.green));
+        }
+        if (user.getIdsPostsVotadosNegativo().contains(post.getPostUID())) {
+            ivUp.setColorFilter(ContextCompat.getColor(DetalleActivity.this, R.color.iconColor));
+            ivDown.setColorFilter(ContextCompat.getColor(DetalleActivity.this, R.color.red));
+
+        }
+
+    }
+
+    public void crearReciclerView(ArrayList<Comentario> comentarios) {
+        adaptador = new AdaptadorComentarios(this, comentarios,null);
         rvComments.setAdapter(adaptador);
         rvComments.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         rvComments.addItemDecoration(new DividerItemDecoration(rvComments.getContext(), DividerItemDecoration.VERTICAL));

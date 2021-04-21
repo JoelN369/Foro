@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.LinearLayout;
 import android.widget.Spinner;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -15,6 +16,7 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.firebase.firestore.*;
 import com.joelnemi.foro.R;
 import com.joelnemi.foro.activities.DetalleActivity;
@@ -67,6 +69,7 @@ public class SearchFragment extends Fragment implements IOnClickPostListener {
 
         rvListado = v.findViewById(R.id.rvItemPosts);
         spOrder = v.findViewById(R.id.spOrden);
+
         llenarSpinner();
 
         return v;

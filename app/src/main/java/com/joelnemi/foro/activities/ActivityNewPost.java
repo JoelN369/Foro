@@ -21,6 +21,7 @@ import com.google.firebase.firestore.*;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.joelnemi.foro.LoadingDialog;
 import com.joelnemi.foro.adapters.AdaptadorOpciones;
 import com.joelnemi.foro.models.Comentario;
 import com.joelnemi.foro.models.Post;
@@ -126,7 +127,7 @@ public class ActivityNewPost extends AppCompatActivity implements View.OnClickLi
             case R.id.navigation_post:
                 if (!fotoSubida) {
                     subirfoto(uri);
-                    Toast.makeText(this,"Subiendo Foto...",Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(this,"Subiendo Foto...",Toast.LENGTH_SHORT).show();
                     return false;
                 }
                 return true;
@@ -210,11 +211,11 @@ public class ActivityNewPost extends AppCompatActivity implements View.OnClickLi
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
+
         if (requestCode == UPLOAD_IMAGE && resultCode == Activity.RESULT_OK){
             if (data!=null){
                 ibAddImage.setImageURI(data.getData());
                 ibAddImage.setColorFilter(Color.TRANSPARENT);
-                Log.d("data", data.getData().toString());
                 uri = data.getData();
 
             }else {
@@ -229,6 +230,9 @@ public class ActivityNewPost extends AppCompatActivity implements View.OnClickLi
 
         final StorageReference ref = storageRef.child("images/"+ UUID.randomUUID() +".jpg");
 
+        LoadingDialog loadingDialog = LoadingDialog.getInstance(this);
+        loadingDialog.changeTextDialog("Subiendo Foto...");
+        loadingDialog.startDialog();
         ref.putFile(uri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
@@ -237,6 +241,7 @@ public class ActivityNewPost extends AppCompatActivity implements View.OnClickLi
                     public void onSuccess(Uri uri) {
                         userPhoto = uri.toString();
                         fotoSubida = true;
+                        loadingDialog.dissmisDialog();
                         guardarPost();
                     }
                 });

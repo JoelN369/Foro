@@ -11,12 +11,13 @@
             android:layout_height="wrap_content"
             android:theme="@style/AppTheme">
         <androidx.appcompat.widget.Toolbar
-                android:id="@+id/toolbar"
+                android:id="@+id/toolbar_postsGuardados"
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
                 android:background="?attr/colorPrimary"/>
     </com.google.android.material.appbar.AppBarLayout>
-
-    <include layout="@layout/content_main"/>
+    <include layout="@layout/fragment_home" android:layout_width="wrap_content" android:layout_height="wrap_content"
+             app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

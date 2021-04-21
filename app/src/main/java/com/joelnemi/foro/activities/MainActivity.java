@@ -1,9 +1,12 @@
 package com.joelnemi.foro.activities;
 
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -14,8 +17,10 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentStatePagerAdapter;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+import androidx.viewpager.widget.ViewPager;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
@@ -27,10 +32,13 @@ import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.navigation.NavigationView;
+import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.auth.*;
 import com.google.firebase.firestore.*;
 import com.google.firebase.firestore.EventListener;
+import com.joelnemi.foro.LoadingDialog;
 import com.joelnemi.foro.R;
 import com.joelnemi.foro.fragments.HomeFragment;
 import com.joelnemi.foro.fragments.SearchFragment;
@@ -38,6 +46,7 @@ import com.joelnemi.foro.listeners.IRefreshListener;
 import com.joelnemi.foro.models.Comentario;
 import com.joelnemi.foro.models.Post;
 import com.joelnemi.foro.models.Usuario;
+
 
 import java.util.*;
 
@@ -56,8 +65,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private boolean isMainActivityRunnning;
 
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -65,15 +76,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 .requestIdToken(getString(R.string.default_web_client_id))
                 .requestEmail()
                 .build();
-        // [END config_signin]
-        //cargarDatosPrueba();
+
         descargarDatos();
 
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
         Intent signInIntent = mGoogleSignInClient.getSignInIntent();
         startActivityForResult(signInIntent, RC_SIGN_IN);
-        // [START initialize_auth]
-        // Initialize Firebase Auth
+
         mAuth = FirebaseAuth.getInstance();
 
         cargarNavigation();
@@ -108,6 +117,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         super.onResume();
 
         isMainActivityRunnning = true;
+        if (bottomNavigation.getSelectedItemId() != R.id.navigation_home){
+            bottomNavigation.setSelectedItemId(R.id.navigation_home);
+        }
+
 
     }
 
@@ -147,6 +160,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     public void descargarDatos() {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
+        LoadingDialog loadingDialog = LoadingDialog.getInstance(MainActivity.this);
+        loadingDialog.startDialog();
 
         db.collection("Posts").orderBy("fechaPost", Query.Direction.DESCENDING).addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
@@ -225,14 +240,17 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         switch (item.getItemId()) {
             case R.id.navigation_home:
                 getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.flMainLayout, HomeFragment.getInstance(posts, MainActivity.this)).addToBackStack(null)
+                        .replace(R.id.flMainLayout, HomeFragment.getInstance(posts, MainActivity.this))
+                        .addToBackStack(null)
                         .commit();
 
                 return true;
             case R.id.navigation_search:
                 getSupportFragmentManager().beginTransaction()
                         .replace(R.id.flMainLayout, SearchFragment.getInstance(posts)).addToBackStack(null)
+                        .addToBackStack(null)
                         .commit();
+
                 return true;
             case R.id.navigation_upload:
                 Intent i = new Intent(MainActivity.this, ActivityNewPost.class);
@@ -240,10 +258,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 startActivity(i);
                 return true;
             case R.id.navigation_messages:
-                //openFragment(NotificationFragment.newInstance("", ""));
                 return true;
             case R.id.navigation_profile:
-                //openFragment(NotificationFragment.newInstance("", ""));
+                Intent iProfile = new Intent(MainActivity.this, ProfileActivity.class);
+                iProfile.putExtra("usuario", usuario);
+                startActivity(iProfile);
                 return true;
         }
         return false;
@@ -266,9 +285,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                 switch (item.getItemId()) {
                     case R.id.nav_saved:
-                        getSupportFragmentManager().beginTransaction()
-                                .replace(R.id.flMainLayout, HomeFragment.getInstance(posts, MainActivity.this)).addToBackStack(null)
-                                .commit();
+                        Intent iProfile = new Intent(MainActivity.this, SavedActivity.class);
+                        iProfile.putExtra("usuario", usuario);
+                        startActivity(iProfile);
                         return true;
                     case R.id.nav_history:
 
@@ -283,6 +302,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }
         });
         bottomNavigation.setOnNavigationItemSelectedListener(this);
+
+
+
 
     }
 

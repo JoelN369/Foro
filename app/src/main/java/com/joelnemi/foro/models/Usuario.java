@@ -13,8 +13,10 @@ public class Usuario implements Serializable {
     private Long fama;
     private Date kholliAge;
     private ArrayList<String> idsPostsGuardados;
-    private ArrayList<String> idsPostsSubidos;
+    private ArrayList<String> idsPostsVotadosPositivo;
+    private ArrayList<String> idsPostsVotadosNegativo;
     private ArrayList<String> idsUsuariosSeguidos;
+    private ArrayList<Comentario> comentariosPublicados;
 
     public Usuario() {
         this.userUID = "";
@@ -23,7 +25,7 @@ public class Usuario implements Serializable {
         this.fama = 321L;
         this.kholliAge = new Date();
         this.idsPostsGuardados = new ArrayList<>();
-        this.idsPostsSubidos = new ArrayList<>();
+        this.idsPostsVotadosPositivo = new ArrayList<>();
         this.idsUsuariosSeguidos = new ArrayList<>();
     }
 
@@ -34,21 +36,27 @@ public class Usuario implements Serializable {
         this.fama = 0L;
         this.kholliAge = new Date();
         this.idsPostsGuardados = new ArrayList<>();
-        this.idsPostsSubidos = new ArrayList<>();
+        this.idsPostsVotadosPositivo = new ArrayList<>();
         this.idsUsuariosSeguidos = new ArrayList<>();
+        this.idsPostsVotadosNegativo = new ArrayList<>();
+        this.comentariosPublicados = new ArrayList<>();
 
     }
 
-    public Usuario(String userUID, String nombre, String foto, Long fama, Date kholliAge, ArrayList<String> idsPostsGuardados,
-                   ArrayList<String> idsPostsSubidos,ArrayList<String> idsUsuariosSeguidos) {
+    public Usuario(String userUID, String nombre, String foto, Long fama,
+                   Date kholliAge, ArrayList<String> idsPostsGuardados, ArrayList<String> idsPostsVotadosPositivo,
+                   ArrayList<String> idsPostsVotadosNegativo, ArrayList<String> idsUsuariosSeguidos,
+                   ArrayList<Comentario> comentariosPublicados) {
         this.userUID = userUID;
         this.nombre = nombre;
         this.foto = foto;
         this.fama = fama;
         this.kholliAge = kholliAge;
         this.idsPostsGuardados = idsPostsGuardados;
-        this.idsPostsSubidos = idsPostsSubidos;
+        this.idsPostsVotadosPositivo = idsPostsVotadosPositivo;
+        this.idsPostsVotadosNegativo = idsPostsVotadosNegativo;
         this.idsUsuariosSeguidos = idsUsuariosSeguidos;
+        this.comentariosPublicados = comentariosPublicados;
     }
 
     public String getNombre() {
@@ -83,13 +91,6 @@ public class Usuario implements Serializable {
         this.kholliAge = kholliAge;
     }
 
-    public ArrayList<String> getIdsPosts() {
-        return idsPostsGuardados;
-    }
-
-    public void setIdsPosts(ArrayList<String> idsPosts) {
-        this.idsPostsGuardados = idsPosts;
-    }
 
     public ArrayList<String> getIdsPostsGuardados() {
         return idsPostsGuardados;
@@ -97,14 +98,6 @@ public class Usuario implements Serializable {
 
     public void setIdsPostsGuardados(ArrayList<String> idsPostsGuardados) {
         this.idsPostsGuardados = idsPostsGuardados;
-    }
-
-    public ArrayList<String> getIdsPostsSubidos() {
-        return idsPostsSubidos;
-    }
-
-    public void setIdsPostsSubidos(ArrayList<String> idsPostsSubidos) {
-        this.idsPostsSubidos = idsPostsSubidos;
     }
 
     public ArrayList<String> getIdsUsuariosSeguidos() {
@@ -123,6 +116,30 @@ public class Usuario implements Serializable {
         this.userUID = userUID;
     }
 
+    public void setIdsPostsVotadosNegativo(ArrayList<String> idsPostsVotadosNegativo) {
+        this.idsPostsVotadosNegativo = idsPostsVotadosNegativo;
+    }
+
+    public ArrayList<String> getIdsPostsVotadosNegativo() {
+        return idsPostsVotadosNegativo;
+    }
+
+    public void setIdsPostsVotadosPositivo(ArrayList<String> idsPostsVotadosPositivo) {
+        this.idsPostsVotadosPositivo = idsPostsVotadosPositivo;
+    }
+
+    public ArrayList<String> getIdsPostsVotadosPositivo() {
+        return idsPostsVotadosPositivo;
+    }
+
+    public ArrayList<Comentario> getComentariosPublicados() {
+        return comentariosPublicados;
+    }
+
+    public void setComentariosPublicados(ArrayList<Comentario> comentariosPublicados) {
+        this.comentariosPublicados = comentariosPublicados;
+    }
+
     @Override
     public String toString() {
         return "Usuario{" +
@@ -132,7 +149,7 @@ public class Usuario implements Serializable {
                 ", fama=" + fama +
                 ", kholliAge=" + kholliAge +
                 ", idsPostsGuardados=" + idsPostsGuardados +
-                ", idsPostsSubidos=" + idsPostsSubidos +
+                ", idsPostsVotados=" + idsPostsVotadosPositivo +
                 ", idsUsuariosSeguidos=" + idsUsuariosSeguidos +
                 '}';
     }

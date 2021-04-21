@@ -124,12 +124,14 @@ public class Post implements Comparable<Post>, Serializable {
     @Override
     public String toString() {
         return "Post{" +
-                "texto='" + texto + '\'' +
+                "postUID='" + postUID + '\'' +
+                ", texto='" + texto + '\'' +
                 ", urlFoto='" + urlFoto + '\'' +
                 ", valoracion=" + valoracion +
                 ", comentarios=" + comentarios +
-                ", userName='" + userUID + '\'' +
+                ", userUID='" + userUID + '\'' +
                 ", categoria='" + categoria + '\'' +
+                ", fechaPost=" + fechaPost +
                 '}';
     }
 

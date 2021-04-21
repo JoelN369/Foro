@@ -46,10 +46,22 @@ public class AdaptadorOpciones extends ArrayAdapter<String> {
 
         holder.nombreOpcion.setText(opciones.get(position));
 
-        switch (opciones.get(position)){
+        switch (position){
+
+            case 0:
+                holder.iconoOpcion.setImageResource(R.drawable.nuevo);
+                break;
+            case 1:
+                holder.iconoOpcion.setImageResource(R.drawable.calidad);
+                break;
+            case 2:
+                holder.iconoOpcion.setImageResource(R.drawable.fire);
+                break;
+            default:
+                break;
 
         }
-        holder.iconoOpcion.setImageResource(R.drawable.casa);
+
 
         return item;
     }

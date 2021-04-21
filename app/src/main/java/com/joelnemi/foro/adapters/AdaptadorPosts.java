@@ -1,6 +1,7 @@
 package com.joelnemi.foro.adapters;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,23 +10,30 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.EventListener;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.*;
+import com.joelnemi.foro.LoadingDialog;
+import com.joelnemi.foro.activities.MainActivity;
+import com.joelnemi.foro.fragments.FragmentPosts;
 import com.joelnemi.foro.models.Post;
 import com.joelnemi.foro.R;
 import com.joelnemi.foro.models.Usuario;
 import com.joelnemi.foro.listeners.IOnClickPostListener;
 import com.joelnemi.foro.utils.Lib;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.function.Predicate;
 
 
 public class AdaptadorPosts extends RecyclerView.Adapter<AdaptadorPosts.PostViewHolder> {
@@ -91,7 +99,9 @@ public class AdaptadorPosts extends RecyclerView.Adapter<AdaptadorPosts.PostView
         private ImageView bMessage;
         private ImageView ivUp;
         private ImageView ivDown;
-        private FirebaseAuth mAuth;
+        private ImageView ivSave;
+
+
 
         public PostViewHolder(View itemView, Context context, IOnClickPostListener listener) {
             super(itemView);
@@ -107,9 +117,11 @@ public class AdaptadorPosts extends RecyclerView.Adapter<AdaptadorPosts.PostView
             bMessage = itemView.findViewById(R.id.ivComments);
             ivUp = itemView.findViewById(R.id.ivUp);
             ivDown = itemView.findViewById(R.id.ivDown);
-            mAuth = FirebaseAuth.getInstance();
             ivPhotoProfile = itemView.findViewById(R.id.ivFotoPerfilPost);
             ivFoto = itemView.findViewById(R.id.ivFoto);
+            ivSave = itemView.findViewById(R.id.ivSavePost);
+
+
 
 
         }
@@ -118,23 +130,24 @@ public class AdaptadorPosts extends RecyclerView.Adapter<AdaptadorPosts.PostView
 
             final FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-            //DocumentReference docRef = db.collection("users").document(userUID).set(new Usuario());
-            db.collection("users").document(post.getUser()).addSnapshotListener(new EventListener<DocumentSnapshot>() {
-                @Override
-                public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
-                    if (value.getData() == null) {
+            LoadingDialog loadingDialog = LoadingDialog.getInstance(null);
 
-                    } else {
+            db.collection("users").document(post.getUser()).get()
+                    .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull @NotNull Task<DocumentSnapshot> task) {
+                            DocumentSnapshot value = task.getResult();
 
-                        Usuario usuario = value.toObject(Usuario.class);
-                        rellenarDatos(usuario,post);
-                    }
-                }
-            });
+                            Usuario usuario = value.toObject(Usuario.class);
+                            rellenarDatos(usuario, post);
+                            loadingDialog.dissmisDialog();
+                        }
+                    });
 
         }
 
         public void rellenarDatos(Usuario user, final Post post) {
+            FirebaseFirestore db = FirebaseFirestore.getInstance();
             if (user != null) {
                 tvParrafo.setText(post.getTexto());
                 tvnombrePerfil.setText(user.getNombre());
@@ -142,6 +155,8 @@ public class AdaptadorPosts extends RecyclerView.Adapter<AdaptadorPosts.PostView
                 tvnumComs.setText(post.getComentarios().size() + "");
                 tvCategoria.setText(post.getCategoria());
 
+
+                comprobaciones(user, post);
                 if (post.getUrlFoto() != null)
                     if (!post.getUrlFoto().equals(""))
                         Glide.with(context)
@@ -169,27 +184,100 @@ public class AdaptadorPosts extends RecyclerView.Adapter<AdaptadorPosts.PostView
                         listener.onUpdateSelected(post);
                     }
                 });
+
+                ivSave.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (!user.getIdsPostsGuardados().contains(post.getPostUID())){
+                            ArrayList<String> postGuardados = user.getIdsPostsGuardados();
+                            postGuardados.add(post.getPostUID());
+                            user.setIdsPostsGuardados(postGuardados);
+                            ivSave.setImageResource(R.drawable.ic_baseline_save);
+                            db.collection("users").document(user.getUserUID()).set(user);
+
+                        }else{
+                            ArrayList<String> postGuardados = user.getIdsPostsGuardados();
+                            postGuardados.remove(post.getPostUID());
+                            user.setIdsPostsGuardados(postGuardados);
+                            ivSave.setImageResource(R.drawable.ic_baseline_no_save);
+                            db.collection("users").document(user.getUserUID()).set(user);
+
+                        }
+                    }
+                });
+
                 ivDown.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        ivUp.setColorFilter(ContextCompat.getColor(context, R.color.iconColor));
-                        ivDown.setColorFilter(ContextCompat.getColor(context, R.color.red));
-
+                        if (!user.getIdsPostsVotadosNegativo().contains(post.getPostUID())&&
+                                !user.getIdsPostsVotadosPositivo().contains(post.getPostUID())){
+                            votacion(post, v, user);
+                        }
 
                     }
                 });
                 ivUp.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-
-                        ivDown.setColorFilter(ContextCompat.getColor(context, R.color.iconColor));
-                        ivUp.setColorFilter(ContextCompat.getColor(context, R.color.green));
-
+                        if (!user.getIdsPostsVotadosNegativo().contains(post.getPostUID())&&
+                                !user.getIdsPostsVotadosPositivo().contains(post.getPostUID())){
+                            votacion(post, v, user);
+                        }
                     }
                 });
             }
 
         }
+
+        public void votacion(Post post, View v, Usuario usuario){
+            FirebaseFirestore db = FirebaseFirestore.getInstance();
+            ArrayList<String> postsVotadosP = usuario.getIdsPostsVotadosPositivo();
+            ArrayList<String> postsVotadosN = usuario.getIdsPostsVotadosNegativo();
+            if (postsVotadosP == null && postsVotadosN == null) {
+                postsVotadosP = new ArrayList<>();
+                postsVotadosN = new ArrayList<>();
+            }
+            if (!postsVotadosP.contains(post.getPostUID()) && !postsVotadosN.contains(post.getPostUID())){
+                Log.d("votacion",v.getId() + " " + R.id.ivDown);
+                switch (v.getId()){
+                    case R.id.ivDown:
+                        post.setValoracion(post.getValoracion() - 1L);
+                        db.collection("Posts").document(post.getPostUID()).set(post);
+                        postsVotadosN.add(post.getPostUID());
+                        usuario.setIdsPostsVotadosNegativo(postsVotadosN);
+                        break;
+                    case R.id.ivUp:
+                        post.setValoracion(post.getValoracion() + 1L);
+                        db.collection("Posts").document(post.getPostUID()).set(post);
+                        postsVotadosP.add(post.getPostUID());
+                        usuario.setIdsPostsVotadosPositivo(postsVotadosP);
+                        break;
+                }
+                db.collection("users").document(usuario.getUserUID()).set(usuario);
+            }
+
+        }
+
+        public void comprobaciones(Usuario user, Post post) {
+
+            if (user.getIdsPostsGuardados().contains(post.getPostUID())) {
+                ivSave.setImageResource(R.drawable.ic_baseline_save);
+            } else {
+                ivSave.setImageResource(R.drawable.ic_baseline_no_save);
+            }
+
+            if (user.getIdsPostsVotadosPositivo().contains(post.getPostUID())) {
+                ivDown.setColorFilter(ContextCompat.getColor(context, R.color.iconColor));
+                ivUp.setColorFilter(ContextCompat.getColor(context, R.color.green));
+            }
+            if (user.getIdsPostsVotadosNegativo().contains(post.getPostUID())) {
+                ivUp.setColorFilter(ContextCompat.getColor(context, R.color.iconColor));
+                ivDown.setColorFilter(ContextCompat.getColor(context, R.color.red));
+
+            }
+
+        }
+
     }
 }
 
