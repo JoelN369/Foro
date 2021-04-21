@@ -49,8 +49,7 @@ public class ProfileActivity extends AppCompatActivity {
         if (savedInstanceState == null) {
             Bundle extras = getIntent().getExtras();
             if (extras == null) {
-                listenerPerfil = null;
-                usuario = null;
+
             } else {
                 usuario = (Usuario) extras.getSerializable("usuario");
                 listenerPerfil = (IPerfilClickListener) extras.getSerializable("listener");
@@ -83,7 +82,9 @@ public class ProfileActivity extends AppCompatActivity {
         if (toolbar != null) {
 
             setSupportActionBar(toolbar);
-            toolbar.setTitle(usuario.getNombre());
+            if (usuario != null) {
+                toolbar.setTitle(usuario.getNombre());
+            }
             final ActionBar actionBar = getSupportActionBar();
 
             if (actionBar != null) {
@@ -121,6 +122,12 @@ public class ProfileActivity extends AppCompatActivity {
         }
 
 
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        finish();
     }
 
     /**

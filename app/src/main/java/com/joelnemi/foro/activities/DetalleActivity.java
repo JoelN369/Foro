@@ -30,6 +30,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.joelnemi.foro.*;
 import com.joelnemi.foro.adapters.AdaptadorComentarios;
+import com.joelnemi.foro.listeners.IPerfilClickListener;
 import com.joelnemi.foro.models.Comentario;
 import com.joelnemi.foro.models.Post;
 import com.joelnemi.foro.models.Usuario;
@@ -61,7 +62,10 @@ public class DetalleActivity extends AppCompatActivity {
     private ImageButton ibSendComment;
     private EditText etCommentText;
     private NestedScrollView svDetalle;
-    private FirebaseFirestore db;
+    private IPerfilClickListener listenerPerfil;
+    private LinearLayout llPerfil;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -107,6 +111,8 @@ public class DetalleActivity extends AppCompatActivity {
         etCommentText = findViewById(R.id.etCommentText);
         svDetalle = findViewById(R.id.svDetalle);
         ivSave = findViewById(R.id.ivSavePost);
+        llPerfil = findViewById(R.id.llPerfil);
+
 
 
 
@@ -116,9 +122,11 @@ public class DetalleActivity extends AppCompatActivity {
             if (extras == null) {
                 post = null;
             } else {
+                listenerPerfil = (IPerfilClickListener) extras.getSerializable("listener");
                 post = (Post) extras.getSerializable("post");
             }
         } else {
+            listenerPerfil = (IPerfilClickListener) savedInstanceState.getSerializable("listener");
             post = (Post) savedInstanceState.getSerializable("post");
         }
 
@@ -221,6 +229,13 @@ public class DetalleActivity extends AppCompatActivity {
 
             tvDate.setText(fecha);
 
+
+            llPerfil.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    listenerPerfil.onPerfilSelected(user,DetalleActivity.this);
+                }
+            });
 
             //Boton para guardar el post
             ivSave.setOnClickListener(new View.OnClickListener() {

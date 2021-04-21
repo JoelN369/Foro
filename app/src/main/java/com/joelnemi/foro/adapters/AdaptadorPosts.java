@@ -190,7 +190,7 @@ public class AdaptadorPosts extends RecyclerView.Adapter<AdaptadorPosts.PostView
                 llPerfil.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        listenerPerfil.onPerfilSelected(user);
+                        listenerPerfil.onPerfilSelected(user, context);
                     }
                 });
 

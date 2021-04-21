@@ -4,9 +4,7 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.util.Log;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -17,10 +15,8 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentStatePagerAdapter;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-import androidx.viewpager.widget.ViewPager;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
@@ -32,20 +28,17 @@ import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.navigation.NavigationView;
-import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.auth.*;
 import com.google.firebase.firestore.*;
 import com.google.firebase.firestore.EventListener;
-import com.joelnemi.foro.CrearCategoriaDialog;
+import com.joelnemi.foro.CrearComunidadDialog;
 import com.joelnemi.foro.LoadingDialog;
 import com.joelnemi.foro.R;
 import com.joelnemi.foro.fragments.HomeFragment;
 import com.joelnemi.foro.fragments.SearchFragment;
-import com.joelnemi.foro.listeners.IPerfilClickListener;
 import com.joelnemi.foro.listeners.IRefreshListener;
-import com.joelnemi.foro.models.Comentario;
+import com.joelnemi.foro.listeners.InstancePerfilListener;
 import com.joelnemi.foro.models.Post;
 import com.joelnemi.foro.models.Usuario;
 import org.jetbrains.annotations.NotNull;
@@ -55,9 +48,9 @@ import java.util.*;
 
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener,
-        BottomNavigationView.OnNavigationItemSelectedListener, IRefreshListener, IPerfilClickListener {
+        BottomNavigationView.OnNavigationItemSelectedListener, IRefreshListener {
 
-    BottomNavigationView bottomNavigation;
+    private BottomNavigationView bottomNavigation;
     private FirebaseAuth mAuth;
     private GoogleSignInClient mGoogleSignInClient;
     private static final String TAG = "GoogleActivity";
@@ -66,6 +59,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private String userUID;
     private Usuario usuario;
     private boolean isMainActivityRunnning;
+    private InstancePerfilListener listener;
 
 
     @Override
@@ -188,7 +182,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                             getSupportFragmentManager().beginTransaction()
                                     .replace(R.id.flMainLayout,
                                             HomeFragment.getInstance(posts,
-                                                    MainActivity.this, MainActivity.this)).
+                                                    MainActivity.this, listener)).
                                     addToBackStack(null)
                                     .commit();
                             bottomNavigation.setSelectedItemId(R.id.navigation_home);
@@ -209,7 +203,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
      * @param user El usuario registrado o logeado
      */
     public void updateUI(final FirebaseUser user) {
-        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         userUID = user.getUid();
         final FirebaseFirestore db = FirebaseFirestore.getInstance();
         //DocumentReference docRef = db.collection("users").document(userUID).set(new Usuario());
@@ -256,14 +249,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             case R.id.navigation_home:
                 getSupportFragmentManager().beginTransaction()
                         .replace(R.id.flMainLayout, HomeFragment.getInstance(posts,
-                                MainActivity.this, MainActivity.this))
+                                MainActivity.this, listener))
                         .addToBackStack(null)
                         .commit();
 
                 return true;
             case R.id.navigation_search:
                 getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.flMainLayout, SearchFragment.getInstance(posts, this)).addToBackStack(null)
+                        .replace(R.id.flMainLayout, SearchFragment.getInstance(posts, listener)).addToBackStack(null)
                         .addToBackStack(null)
                         .commit();
 
@@ -278,6 +271,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             case R.id.navigation_profile:
                 Intent iProfile = new Intent(MainActivity.this, ProfileActivity.class);
                 iProfile.putExtra("usuario", usuario);
+                iProfile.putExtra("listener", listener);
                 startActivity(iProfile);
                 return true;
         }
@@ -289,14 +283,19 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
      */
     public void cargarNavigation() {
 
+        listener = InstancePerfilListener.getInstance();
+
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
         bottomNavigation = findViewById(R.id.bottom_navigation);
+
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
+
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
@@ -312,6 +311,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         return true;
                     case R.id.nav_comunidad:
                         // Mostrar un dialogo para crear una nueva comunidad
+                        CrearComunidadDialog dialog = new CrearComunidadDialog(MainActivity.this);
+                        dialog.startDialog();
+
                         return true;
                 }
                 DrawerLayout drawer = findViewById(R.id.drawer_layout);
@@ -361,10 +363,4 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 });
     }
 
-    @Override
-    public void onPerfilSelected(Usuario user) {
-        Intent iProfile = new Intent(MainActivity.this, ProfileActivity.class);
-        iProfile.putExtra("usuario", user);
-        startActivity(iProfile);
-    }
 }

@@ -99,6 +99,7 @@ public class SearchFragment extends Fragment implements IOnClickPostListener {
     public void onUpdateSelected(Post post) {
         Intent i = new Intent(getContext(), DetalleActivity.class);
         i.putExtra("post",post);
+        i.putExtra("listener",listenerPerfil);
         startActivity(i);
     }
 
