@@ -8,10 +8,11 @@
         app:cardElevation="100dp"
         android:layout_margin="5dp"
         android:padding="15dp"
-        android:layout_weight="1" android:id="@+id/comentCard">
+        android:layout_weight="1" android:id="@+id/comentCard" app:cardBackgroundColor="@color/backgroundItem">
     <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" android:orientation="vertical" android:padding="10dp">
+            android:layout_height="wrap_content" android:orientation="vertical" android:padding="10dp"
+            android:background="@color/backgroundItem">
         <LinearLayout
                 android:orientation="horizontal"
                 android:layout_width="match_parent"
@@ -21,19 +22,18 @@
                     android:layout_height="30dp" tools:srcCompat="@tools:sample/avatars"
                     android:id="@+id/ivFotoPerfilComent"/>
             <TextView
-                    android:text="TextView"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" android:id="@+id/tvNameComment" android:padding="10dp"/>
+                    android:layout_height="wrap_content" android:id="@+id/tvNameComment" android:padding="10dp"
+                    android:textColor="@color/textColor"/>
             <TextView
-                    android:text="TextView"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" android:id="@+id/tvTimeElapsed" android:padding="10dp"/>
+                    android:layout_height="wrap_content" android:id="@+id/tvTimeElapsed" android:padding="10dp"
+                    android:textColor="@color/textColor"/>
         </LinearLayout>
         <TextView
-                android:text="TextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" android:id="@+id/tvComment" android:layout_weight="1"
-                android:padding="10dp"/>
+                android:padding="10dp" android:textColor="@color/textColor"/>
         <LinearLayout
                 android:orientation="horizontal"
                 android:layout_width="match_parent"
@@ -41,28 +41,29 @@
             <ImageView
                     android:layout_width="20dp"
                     android:layout_height="20dp" app:srcCompat="@drawable/curved_arrow_up" android:scaleX="-1"
-                    android:id="@+id/ivUpinComments" app:tint="@color/iconColor" android:layout_marginStart="40dp"/>
+                    android:id="@+id/ivUpinComments" app:tint="@color/textColor" android:layout_marginStart="40dp"
+            />
             <TextView
                     android:layout_width="50dp"
                     android:layout_height="wrap_content" android:id="@+id/tvValoracioninComments"
-                    android:textColor="@color/iconColor" android:text="34.8k" android:textAlignment="center"
+                    android:textColor="@color/textColor" android:text="34.8k" android:textAlignment="center"
                     android:padding="3dp"/>
             <ImageView
                     android:layout_width="20dp"
                     android:layout_height="20dp" app:srcCompat="@drawable/arrow_curve_down"
-                    android:id="@+id/ivDowninComments" app:tint="@color/iconColor"
+                    android:id="@+id/ivDowninComments" app:tint="@color/textColor"
             />
             <ImageView
                     android:layout_width="20dp"
                     android:layout_height="20dp" app:srcCompat="@drawable/arrow_curve_down"
-                    android:id="@+id/ivReply" app:tint="@color/iconColor" android:rotation="90"
+                    android:id="@+id/ivReply" app:tint="@color/textColor" android:rotation="90"
                     android:scaleX="-1"
                     android:layout_marginStart="100dp"/>
 
             <TextView
                     android:text="REPLY"
                     android:layout_height="wrap_content" android:id="@+id/tvReply"
-                    android:textColor="@color/iconColor" android:layout_width="wrap_content"
+                    android:textColor="@color/textColor" android:layout_width="wrap_content"
                     android:layout_marginStart="10dp"/>
 
         </LinearLayout>

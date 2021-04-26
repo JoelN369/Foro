@@ -169,28 +169,28 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         LoadingDialog loadingDialog = LoadingDialog.getInstance(MainActivity.this);
         loadingDialog.startDialog();
 
-        db.collection("Posts").orderBy("fechaPost", Query.Direction.DESCENDING).get().
-                addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull @NotNull Task<QuerySnapshot> task) {
+        db.collection("Posts").orderBy("fechaPost", Query.Direction.DESCENDING)
+                .addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+                //Guardo los post en un Array List para pasarlo a un Fragment
+                posts = (ArrayList<Post>) value.toObjects(Post.class);
 
-                        //Guarfdo los post en un Array List para pasarlo a un Fragment
-                        posts = (ArrayList<Post>) task.getResult().toObjects(Post.class);
-
-                        //Si estamos en main activity y se ejecuta en el fragment Home
-                        if (isMainActivityRunnning) {
-                            getSupportFragmentManager().beginTransaction()
-                                    .replace(R.id.flMainLayout,
-                                            HomeFragment.getInstance(posts,
-                                                    MainActivity.this, listener)).
-                                    addToBackStack(null)
-                                    .commit();
-                            bottomNavigation.setSelectedItemId(R.id.navigation_home);
+                //Si estamos en main activity y se ejecuta en el fragment Home
+                if (isMainActivityRunnning) {
+                    getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.flMainLayout,
+                                    HomeFragment.getInstance(posts,
+                                            MainActivity.this, listener)).
+                            addToBackStack(null)
+                            .commit();
+                    bottomNavigation.setSelectedItemId(R.id.navigation_home);
 
 
-                        }
-                    }
-                });
+                }
+            }
+        });
+
 
 
     }

@@ -33,6 +33,7 @@ public class FragmentPosts extends Fragment implements IOnClickPostListener {
     private AdaptadorPosts adaptador;
     private ArrayList<Post> posts;
     private IPerfilClickListener listenerPerfil;
+    private Usuario usuario;
 
 
     @Nullable
@@ -48,27 +49,28 @@ public class FragmentPosts extends Fragment implements IOnClickPostListener {
             if(extras == null) {
                 listenerPerfil = null;
             } else {
+                usuario = (Usuario) extras.getSerializable("usuario");
                 listenerPerfil = (IPerfilClickListener) extras.getSerializable("listener");
             }
         } else {
+            usuario = (Usuario) savedInstanceState.getSerializable("usuario");
             listenerPerfil = (IPerfilClickListener) savedInstanceState.getSerializable("listener");
         }
 
 
         rvListado = v.findViewById(R.id.rvItemPosts);
 
-        //Guardo instancias de Firestore y Auth para conseguir el usuario registrado
+        //Guardo instancias de Firestore
         FirebaseFirestore db = FirebaseFirestore.getInstance();
-        FirebaseAuth mAuth = FirebaseAuth.getInstance();
-        FirebaseUser user = mAuth.getCurrentUser();
+
 
         //Muestro los post que ha subido dicho usuario
-        db.collection("Posts").whereEqualTo("user", user.getUid()).addSnapshotListener(new EventListener<QuerySnapshot>() {
+        db.collection("Posts").whereEqualTo("user", usuario.getUserUID()).addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
                 posts = (ArrayList<Post>) value.toObjects(Post.class);
                 Log.d("postjoel", value.getDocuments().toString());
-                adaptador = new AdaptadorPosts(getContext(), posts, FragmentPosts.this, listenerPerfil);
+                adaptador = new AdaptadorPosts(getContext(), posts, FragmentPosts.this, listenerPerfil,getActivity());
                 rvListado.setAdapter(adaptador);
                 rvListado.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false));
                 rvListado.addItemDecoration(new DividerItemDecoration(rvListado.getContext(), DividerItemDecoration.VERTICAL));

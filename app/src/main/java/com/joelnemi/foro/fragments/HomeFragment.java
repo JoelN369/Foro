@@ -80,7 +80,7 @@ public class HomeFragment extends Fragment implements IOnClickPostListener {
         super.onActivityCreated(savedInstanceState);
 
         //Creo el recicler view con los posts
-        adaptador = new AdaptadorPosts(getContext(), posts,this, listenerPerfil);
+        adaptador = new AdaptadorPosts(getContext(), posts,this, listenerPerfil,getActivity());
         rvListado.setAdapter(adaptador);
         rvListado.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false));
         rvListado.addItemDecoration(new DividerItemDecoration(rvListado.getContext(), DividerItemDecoration.VERTICAL));

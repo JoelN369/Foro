@@ -99,7 +99,7 @@ public class SavedActivity extends AppCompatActivity implements IOnClickPostList
 
                             if (finalI == usuario.getIdsPostsGuardados().size() - 1) {
                                 adaptador = new AdaptadorPosts(SavedActivity.this, postsGuardados,
-                                        SavedActivity.this,listenerPerfil);
+                                        SavedActivity.this,listenerPerfil, null);
                                 rvListado.setAdapter(adaptador);
 
                                 rvListado.setLayoutManager(new LinearLayoutManager(

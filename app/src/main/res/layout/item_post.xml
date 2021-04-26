@@ -17,7 +17,7 @@
             android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" android:paddingTop="10dp" android:paddingBottom="10dp"
-            android:background="#2B2B2B">
+            android:background="@color/backgroundItem">
         <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" android:id="@+id/llPerfil">
@@ -33,11 +33,11 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content" android:id="@+id/tvNombrePerfil"
                         android:layout_weight="1"
-                        android:textColor="#FFFFFF" android:layout_marginStart="10dp"/>
+                        android:textColor="@color/textColor" android:layout_marginStart="10dp"/>
                 <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content" android:id="@+id/tvCategoria" android:layout_weight="1"
-                        android:textColor="#FFFFFF" android:layout_marginStart="10dp"/>
+                        android:textColor="@color/textColor" android:layout_marginStart="10dp"/>
             </LinearLayout>
             <TextView
                     android:layout_width="0dp"
@@ -62,31 +62,31 @@
             <ImageView
                     android:layout_width="0dp"
                     android:layout_height="20dp" app:srcCompat="@drawable/curved_arrow_up" android:scaleX="-1"
-                    android:id="@+id/ivUp" android:layout_weight="1" app:tint="@color/iconColor"/>
+                    android:id="@+id/ivUp" android:layout_weight="1" app:tint="@color/textColor"/>
             <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content" android:id="@+id/tvValoracion" android:layout_weight="1"
-                    android:textColor="@color/iconColor" android:text="34.8k" android:textAlignment="center"/>
+                    android:textColor="@color/textColor" android:text="34.8k" android:textAlignment="center"/>
             <ImageView
                     android:layout_width="0dp"
                     android:layout_height="20dp" app:srcCompat="@drawable/arrow_curve_down"
-                    android:id="@+id/ivDown" android:layout_weight="1" app:tint="@color/iconColor"
+                    android:id="@+id/ivDown" android:layout_weight="1" app:tint="@color/textColor"
             />
             <ImageView
                     android:layout_width="0dp"
                     android:layout_height="20dp" app:srcCompat="@drawable/mensajes"
                     android:id="@+id/ivComments" android:layout_weight="1"
-                    android:layout_marginStart="50dp" app:tint="@color/iconColor"/>
+                    android:layout_marginStart="50dp" app:tint="@color/textColor"/>
             <TextView
                     android:text="42"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" android:id="@+id/tvnumCom" android:layout_weight="2"
-                    android:textColor="@color/iconColor"/>
+                    android:textColor="@color/textColor"/>
             <ImageView
                     android:layout_width="0dp"
                     android:layout_height="20dp" app:srcCompat="@drawable/ic_baseline_save"
                     android:id="@+id/ivSavePost" android:layout_weight="1"
-                    android:layout_marginStart="20dp" app:tint="@color/iconColor"/>
+                    android:layout_marginStart="20dp" app:tint="@color/textColor"/>
 
 
         </LinearLayout>

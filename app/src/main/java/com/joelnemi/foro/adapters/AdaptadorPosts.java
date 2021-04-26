@@ -1,5 +1,6 @@
 package com.joelnemi.foro.adapters;
 
+import android.app.Activity;
 import android.content.Context;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -8,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
@@ -44,10 +46,12 @@ public class AdaptadorPosts extends RecyclerView.Adapter<AdaptadorPosts.PostView
     private int position;
     private IOnClickPostListener listener;
     private IPerfilClickListener listenerPerfil;
+    private Activity activity;
 
 
     public AdaptadorPosts(Context context, ArrayList<Post> posts, IOnClickPostListener listener,
-                          IPerfilClickListener listenerPerfil) {
+                          IPerfilClickListener listenerPerfil, Activity activity) {
+        this.activity = activity;
         this.context = context;
         this.posts = posts;
         this.listener = listener;
@@ -58,7 +62,8 @@ public class AdaptadorPosts extends RecyclerView.Adapter<AdaptadorPosts.PostView
     @Override
     public PostViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
         View itemView = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.item_post, viewGroup, false);
-        PostViewHolder viewHolder = new PostViewHolder(itemView, context, listener, listenerPerfil);
+
+        PostViewHolder viewHolder = new PostViewHolder(itemView, context, listener, listenerPerfil, activity);
         return viewHolder;
     }
 
@@ -107,11 +112,16 @@ public class AdaptadorPosts extends RecyclerView.Adapter<AdaptadorPosts.PostView
         private ImageView ivSave;
         private LinearLayout llPerfil;
         private IPerfilClickListener listenerPerfil;
+        private Activity activity;
+
+        private LoadingDialog loadingDialog;
 
 
 
-        public PostViewHolder(View itemView, Context context, IOnClickPostListener listener, IPerfilClickListener listenerPerfil) {
+        public PostViewHolder(View itemView, Context context, IOnClickPostListener listener,
+                              IPerfilClickListener listenerPerfil, Activity activity) {
             super(itemView);
+            this.activity = activity;
             this.context = context;
             this.listener = listener;
             this.listenerPerfil = listenerPerfil;
@@ -139,7 +149,8 @@ public class AdaptadorPosts extends RecyclerView.Adapter<AdaptadorPosts.PostView
 
             final FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-            LoadingDialog loadingDialog = LoadingDialog.getInstance(null);
+            loadingDialog = LoadingDialog.getInstance(null);
+
 
             db.collection("users").document(post.getUser()).get()
                     .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
@@ -148,14 +159,33 @@ public class AdaptadorPosts extends RecyclerView.Adapter<AdaptadorPosts.PostView
                             DocumentSnapshot value = task.getResult();
 
                             Usuario usuario = value.toObject(Usuario.class);
-                            rellenarDatos(usuario, post);
-                            loadingDialog.dissmisDialog();
+                            currentUser(usuario, post);
+
                         }
                     });
 
+
         }
 
-        public void rellenarDatos(Usuario user, final Post post) {
+        public void currentUser(Usuario user, final Post post){
+
+            final FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+            FirebaseAuth mauth = FirebaseAuth.getInstance();
+            db.collection("users").document(mauth.getCurrentUser().getUid()).addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                @Override
+                public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
+
+                        Usuario usuario = value.toObject(Usuario.class);
+                        rellenarDatos(user, post, usuario);
+                        loadingDialog.dissmisDialog();
+
+                }
+            });
+
+        }
+
+        public void rellenarDatos(Usuario user, final Post post, Usuario currentUser) {
             FirebaseFirestore db = FirebaseFirestore.getInstance();
             if (user != null) {
                 tvParrafo.setText(post.getTexto());
@@ -165,7 +195,7 @@ public class AdaptadorPosts extends RecyclerView.Adapter<AdaptadorPosts.PostView
                 tvCategoria.setText(post.getCategoria());
 
 
-                comprobaciones(user, post);
+                comprobaciones(currentUser, post);
                 if (post.getUrlFoto() != null)
                     if (!post.getUrlFoto().equals(""))
                         Glide.with(context)
@@ -194,53 +224,75 @@ public class AdaptadorPosts extends RecyclerView.Adapter<AdaptadorPosts.PostView
                     }
                 });
 
-                bMessage.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        listener.onUpdateSelected(post);
-                    }
-                });
+                if (activity instanceof MainActivity) {
 
-                ivSave.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        if (!user.getIdsPostsGuardados().contains(post.getPostUID())){
-                            ArrayList<String> postGuardados = user.getIdsPostsGuardados();
-                            postGuardados.add(post.getPostUID());
-                            user.setIdsPostsGuardados(postGuardados);
-                            ivSave.setImageResource(R.drawable.ic_baseline_save);
-                            db.collection("users").document(user.getUserUID()).set(user);
+                    bMessage.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            listener.onUpdateSelected(post);
+                        }
+                    });
 
-                        }else{
-                            ArrayList<String> postGuardados = user.getIdsPostsGuardados();
-                            postGuardados.remove(post.getPostUID());
-                            user.setIdsPostsGuardados(postGuardados);
-                            ivSave.setImageResource(R.drawable.ic_baseline_no_save);
-                            db.collection("users").document(user.getUserUID()).set(user);
+                    ivSave.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            if (!currentUser.getIdsPostsGuardados().contains(post.getPostUID())) {
+                                ArrayList<String> postGuardados = currentUser.getIdsPostsGuardados();
+                                Log.d("save", postGuardados.toString() + " cojo datos para guardar 1");
+                                postGuardados.add(post.getPostUID());
+                                currentUser.setIdsPostsGuardados(postGuardados);
+                                ivSave.setImageResource(R.drawable.ic_baseline_save);
+                                db.collection("users").document(currentUser.getUserUID())
+                                        .set(currentUser).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                    @Override
+                                    public void onComplete(@NonNull @NotNull Task<Void> task) {
+                                        Log.d("save", postGuardados.toString() + "despues de añadir 1");
+                                        refrescarUsuario(user, post, currentUser);
+                                    }
+                                });
+
+
+                            } else {
+                                ArrayList<String> postGuardados = currentUser.getIdsPostsGuardados();
+                                Log.d("save", postGuardados.toString() + " para borrar 1");
+                                postGuardados.remove(post.getPostUID());
+                                Log.d("save", postGuardados.toString() + " despues del remove: " + post.getPostUID());
+                                currentUser.setIdsPostsGuardados(postGuardados);
+                                ivSave.setImageResource(R.drawable.ic_baseline_no_save);
+                                db.collection("users").document(currentUser.getUserUID())
+                                        .set(currentUser).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                    @Override
+                                    public void onComplete(@NonNull @NotNull Task<Void> task) {
+                                        Log.d("save", postGuardados.toString() + " borrado 1");
+                                        refrescarUsuario(user, post, currentUser);
+                                    }
+                                });
+
+
+                            }
+                        }
+                    });
+
+                    ivDown.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            if (!user.getIdsPostsVotadosNegativo().contains(post.getPostUID()) &&
+                                    !user.getIdsPostsVotadosPositivo().contains(post.getPostUID())) {
+                                votacion(post, v, currentUser);
+                            }
 
                         }
-                    }
-                });
-
-                ivDown.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        if (!user.getIdsPostsVotadosNegativo().contains(post.getPostUID())&&
-                                !user.getIdsPostsVotadosPositivo().contains(post.getPostUID())){
-                            votacion(post, v, user);
+                    });
+                    ivUp.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            if (!user.getIdsPostsVotadosNegativo().contains(post.getPostUID()) &&
+                                    !user.getIdsPostsVotadosPositivo().contains(post.getPostUID())) {
+                                votacion(post, v, currentUser);
+                            }
                         }
-
-                    }
-                });
-                ivUp.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        if (!user.getIdsPostsVotadosNegativo().contains(post.getPostUID())&&
-                                !user.getIdsPostsVotadosPositivo().contains(post.getPostUID())){
-                            votacion(post, v, user);
-                        }
-                    }
-                });
+                    });
+                }
             }
 
         }
@@ -292,6 +344,21 @@ public class AdaptadorPosts extends RecyclerView.Adapter<AdaptadorPosts.PostView
 
             }
 
+        }
+
+        public void refrescarUsuario(Usuario user, Post post, Usuario currentUser){
+            FirebaseFirestore db = FirebaseFirestore.getInstance();
+            db.collection("users").document(currentUser.getUserUID()).get()
+                    .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull @NotNull Task<DocumentSnapshot> task) {
+                            DocumentSnapshot value = task.getResult();
+
+                            Usuario usuario = value.toObject(Usuario.class);
+                            rellenarDatos(user, post, usuario);
+
+                        }
+                    });
         }
 
     }

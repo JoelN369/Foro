@@ -83,7 +83,7 @@ public class SearchFragment extends Fragment implements IOnClickPostListener {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        adaptador = new AdaptadorPosts(getContext(), posts,this, listenerPerfil);
+        adaptador = new AdaptadorPosts(getContext(), posts,this, listenerPerfil,getActivity());
         rvListado.setAdapter(adaptador);
         rvListado.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false));
         rvListado.addItemDecoration(new DividerItemDecoration(rvListado.getContext(), DividerItemDecoration.VERTICAL));
@@ -149,7 +149,7 @@ public class SearchFragment extends Fragment implements IOnClickPostListener {
                 posts = (ArrayList<Post>) value.toObjects(Post.class);
                 Log.d("postjoel", value.getDocuments().toString());
 
-                adaptador = new AdaptadorPosts(getContext(), posts,SearchFragment.this,listenerPerfil);
+                adaptador = new AdaptadorPosts(getContext(), posts,SearchFragment.this,listenerPerfil,getActivity());
                 rvListado.setAdapter(adaptador);
                 rvListado.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false));
                 rvListado.addItemDecoration(new DividerItemDecoration(rvListado.getContext(), DividerItemDecoration.VERTICAL));

@@ -15,12 +15,12 @@
             app:layout_constraintTop_toTopOf="parent" app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent" android:layout_marginTop="28dp"
             android:dropDownVerticalOffset="10dp"
-            app:layout_constraintHorizontal_bias="0.193" android:id="@+id/spCat" android:spinnerMode="dialog"
+            app:layout_constraintHorizontal_bias="0.193" android:id="@+id/spCat" android:spinnerMode="dropdown"
             android:padding="5dp" android:paddingTop="10dp" android:entries="@array/spinnerItems"/>
     <EditText
             android:layout_width="243dp"
             android:layout_height="47dp"
-            android:inputType="textPersonName"
+            android:inputType="text"
             android:ems="10"
             android:id="@+id/etNewTitulo"
             app:layout_constraintTop_toBottomOf="@+id/spCat"

@@ -99,7 +99,7 @@ public class ProfileActivity extends AppCompatActivity {
         ivUserPhoto = findViewById(R.id.ivFotoPerfil);
         tvNameUser = findViewById(R.id.tvName);
         adapter = new FragmentAdapter(getSupportFragmentManager(),
-                FragmentStatePagerAdapter.BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT,this, listenerPerfil);
+                FragmentStatePagerAdapter.BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT,this, listenerPerfil,usuario);
         mViewPager = findViewById(R.id.container);
         mViewPager.setAdapter(adapter);
 

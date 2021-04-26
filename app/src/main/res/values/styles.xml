@@ -4,7 +4,18 @@
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="drawerArrowStyle">@style/HamburguesaColor</item>
+
+
         <item name="colorAccent">@color/colorAccent</item>
+    </style>
+
+    <style name="HamburguesaColor" parent="Widget.AppCompat.DrawerArrowToggle">
+        <item name="color">@color/textColor</item>
+    </style>
+
+    <style name="NavigationsItems" parent="Widget.MaterialComponents.BottomNavigationView.Colored">
+        <item name="color">@color/textColor</item>
     </style>
 
 </resources>

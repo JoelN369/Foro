@@ -223,9 +223,9 @@ public class ActivityNewPost extends AppCompatActivity implements View.OnClickLi
                     categorias.add(ds.getData().get("nombre").toString());
                 }
 
-                ArrayAdapter<String> adapterCategoria = new AdaptadorOpciones(getApplicationContext(),
+                ArrayAdapter<String> adapterCategoria = new ArrayAdapter<>(getApplicationContext(),
                         android.R.layout.simple_dropdown_item_1line, categorias);
-                adapterCategoria.setDropDownViewResource(R.layout.custom_spinner_dropdown_item);
+                adapterCategoria.setDropDownViewResource(R.layout.support_simple_spinner_dropdown_item);
 
                 spCat.setAdapter(adapterCategoria);
                 spCat.setSelection(0);

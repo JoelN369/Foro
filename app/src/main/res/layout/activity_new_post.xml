@@ -16,6 +16,6 @@
                 android:layout_height="?attr/actionBarSize"
                 android:background="?attr/colorPrimary"/>
     </com.google.android.material.appbar.AppBarLayout>
-    <include layout="@layout/new_post"/>
+    <include layout="@layout/new_post" android:background="@color/backgroundColor"/>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

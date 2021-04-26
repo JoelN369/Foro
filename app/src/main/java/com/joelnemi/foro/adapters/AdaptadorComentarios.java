@@ -12,6 +12,7 @@ import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.request.RequestOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -150,6 +151,7 @@ public class AdaptadorComentarios extends RecyclerView.Adapter<AdaptadorComentar
                     if (!user.getFoto().equals(""))
                         Glide.with(context)
                                 .load(user.getFoto())
+                                .apply(RequestOptions.circleCropTransform())
                                 .diskCacheStrategy(DiskCacheStrategy.ALL)
                                 .thumbnail(0.1f)
                                 .into(ivFotoPerfil);

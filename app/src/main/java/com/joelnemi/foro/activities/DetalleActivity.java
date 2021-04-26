@@ -8,7 +8,6 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.*;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -22,12 +21,9 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.google.android.material.appbar.AppBarLayout;
-import com.google.android.material.appbar.CollapsingToolbarLayout;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.joelnemi.foro.*;
 import com.joelnemi.foro.adapters.AdaptadorComentarios;
 import com.joelnemi.foro.listeners.IPerfilClickListener;
@@ -37,10 +33,8 @@ import com.joelnemi.foro.models.Usuario;
 import com.joelnemi.foro.utils.Lib;
 import org.jetbrains.annotations.NotNull;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.function.Predicate;
 
 public class DetalleActivity extends AppCompatActivity {
 
@@ -64,7 +58,7 @@ public class DetalleActivity extends AppCompatActivity {
     private NestedScrollView svDetalle;
     private IPerfilClickListener listenerPerfil;
     private LinearLayout llPerfil;
-
+    private boolean isDetalleActivityRunnning;
 
 
     @Override
@@ -114,8 +108,6 @@ public class DetalleActivity extends AppCompatActivity {
         llPerfil = findViewById(R.id.llPerfil);
 
 
-
-
         //Compruebo si el bundle es nulo y si contiene extras y las guardo
         if (savedInstanceState == null) {
             Bundle extras = getIntent().getExtras();
@@ -136,20 +128,59 @@ public class DetalleActivity extends AppCompatActivity {
         //Busco al usuario y relleno los datos del post
         db.collection("users").document(post.getUser()).get()
                 .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-            @Override
-            public void onComplete(@NonNull @NotNull Task<DocumentSnapshot> task) {
-                DocumentSnapshot value = task.getResult();
+                    @Override
+                    public void onComplete(@NonNull @NotNull Task<DocumentSnapshot> task) {
+                        DocumentSnapshot value = task.getResult();
 
-                Usuario usuario = value.toObject(Usuario.class);
-                rellenarDatos(usuario, post);
-                modificarToolbar(scrollView, usuario);
-            }
-        });
+                        Usuario usuario = value.toObject(Usuario.class);
+                        currentUser(usuario, post);
 
+                    }
+                });
 
 
     }
 
+
+
+
+    public void currentUser(Usuario user, final Post post) {
+
+        final FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        FirebaseAuth mauth = FirebaseAuth.getInstance();
+        db.collection("users").document(mauth.getCurrentUser().getUid()).get()
+                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull @NotNull Task<DocumentSnapshot> task) {
+                        DocumentSnapshot value = task.getResult();
+
+                        Usuario usuario = value.toObject(Usuario.class);
+                        rellenarDatos(user, post, usuario);
+
+                    }
+                });
+    }
+
+
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        //Cuando vuelven a esta activity desde otra el booleano se vuelve true y se selecciona en el menu
+        // de abajo la pestaña Home
+        isDetalleActivityRunnning = true;
+
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        //Cuando se navega a otra activity este el booleano se vuelve false
+        //Este booleano sirve para control de errores al ejecutarse el listener de descargar los datos
+        isDetalleActivityRunnning = false;
+    }
     @Override
     public boolean onSupportNavigateUp() {
         onBackPressed();
@@ -192,10 +223,11 @@ public class DetalleActivity extends AppCompatActivity {
 
     /**
      * Rellena los datos del post y sus comentarios con la informacion del usuario y del post
+     *
      * @param user el usuario que subio el post
      * @param post El post
      */
-    public void rellenarDatos(Usuario user, final Post post) {
+    public void rellenarDatos(Usuario user, final Post post, Usuario currentUser) {
 
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         if (user != null) {
@@ -206,6 +238,7 @@ public class DetalleActivity extends AppCompatActivity {
             tvCategoria.setText(post.getCategoria());
 
             comprobaciones(user, post);
+            FirebaseAuth mauth = FirebaseAuth.getInstance();
 
             //Asigno la foto del post y del usuario
             if (post.getUrlFoto() != null)
@@ -233,7 +266,7 @@ public class DetalleActivity extends AppCompatActivity {
             llPerfil.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    listenerPerfil.onPerfilSelected(user,DetalleActivity.this);
+                    listenerPerfil.onPerfilSelected(user, DetalleActivity.this);
                 }
             });
 
@@ -241,18 +274,25 @@ public class DetalleActivity extends AppCompatActivity {
             ivSave.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if (!user.getIdsPostsGuardados().contains(post.getPostUID())){
-                        ArrayList<String> postGuardados = user.getIdsPostsGuardados();
-                        postGuardados.add(post.getPostUID());
-                        user.setIdsPostsGuardados(postGuardados);
-                        db.collection("users").document(user.getUserUID()).set(user);
+                    if (isDetalleActivityRunnning) {
+                        if (!currentUser.getIdsPostsGuardados().contains(post.getPostUID())) {
+                            ArrayList<String> postGuardados = currentUser.getIdsPostsGuardados();
+                            postGuardados.add(post.getPostUID());
+                            currentUser.setIdsPostsGuardados(postGuardados);
+                            ivSave.setImageResource(R.drawable.ic_baseline_save);
+                            db.collection("users").document(currentUser.getUserUID()).set(currentUser);
 
-                    }else{
-                        ArrayList<String> postGuardados = user.getIdsPostsGuardados();
-                        postGuardados.removeIf(Predicate.isEqual(post.getPostUID()));
-                        user.setIdsPostsGuardados(postGuardados);
-                        db.collection("users").document(user.getUserUID()).set(user);
 
+                        } else {
+                            ArrayList<String> postGuardados = currentUser.getIdsPostsGuardados();
+                            Log.d("save", postGuardados.toString());
+                            postGuardados.remove(post.getPostUID());
+                            currentUser.setIdsPostsGuardados(postGuardados);
+                            ivSave.setImageResource(R.drawable.ic_baseline_no_save);
+                            db.collection("users").document(currentUser.getUserUID()).set(currentUser);
+                            Log.d("save", postGuardados.toString());
+
+                        }
                     }
                 }
             });
@@ -261,8 +301,8 @@ public class DetalleActivity extends AppCompatActivity {
             ivDown.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if (!user.getIdsPostsVotadosNegativo().contains(post.getPostUID())&&
-                            !user.getIdsPostsVotadosPositivo().contains(post.getPostUID())){
+                    if (!user.getIdsPostsVotadosNegativo().contains(post.getPostUID()) &&
+                            !user.getIdsPostsVotadosPositivo().contains(post.getPostUID())) {
                         votacion(post, v, user);
                         ivUp.setColorFilter(ContextCompat.getColor(DetalleActivity.this, R.color.iconColor));
                         ivDown.setColorFilter(ContextCompat.getColor(DetalleActivity.this, R.color.red));
@@ -275,8 +315,8 @@ public class DetalleActivity extends AppCompatActivity {
             ivUp.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if (!user.getIdsPostsVotadosNegativo().contains(post.getPostUID())&&
-                            !user.getIdsPostsVotadosPositivo().contains(post.getPostUID())){
+                    if (!user.getIdsPostsVotadosNegativo().contains(post.getPostUID()) &&
+                            !user.getIdsPostsVotadosPositivo().contains(post.getPostUID())) {
                         votacion(post, v, user);
                         ivDown.setColorFilter(ContextCompat.getColor(DetalleActivity.this, R.color.iconColor));
                         ivUp.setColorFilter(ContextCompat.getColor(DetalleActivity.this, R.color.green));
@@ -292,8 +332,8 @@ public class DetalleActivity extends AppCompatActivity {
                     if (!comentario.equals("")) {
 
                         //guardo el comentario
-                        Comentario comentario1 = new Comentario(user.getUserUID(), comentario,
-                                new Date(), 0L,post.getPostUID());
+                        Comentario comentario1 = new Comentario(mauth.getCurrentUser().getUid(), comentario,
+                                new Date(), 0L, post.getPostUID());
                         post.getComentarios().add(comentario1);
 
                         //El comentario se añade al reciclerView
@@ -307,10 +347,9 @@ public class DetalleActivity extends AppCompatActivity {
                             ArrayList<Comentario> comentarios = new ArrayList<>();
                             comentarios.add(comentario1);
                             user.setComentariosPublicados(comentarios);
-                        }else{
+                        } else {
                             user.getComentariosPublicados().add(comentario1);
                         }
-
 
 
                         db.collection("users").document(user.getUserUID()).set(user);
@@ -330,26 +369,27 @@ public class DetalleActivity extends AppCompatActivity {
 
     /**
      * Segun el boton al que le des se añadira a un array o a otro
-     * @param post El post que esta valorando
-     * @param v El boton al que le das click
+     *
+     * @param post    El post que esta valorando
+     * @param v       El boton al que le das click
      * @param usuario El usuario que esta votando
      */
-    public void votacion(Post post, View v, Usuario usuario){
+    public void votacion(Post post, View v, Usuario usuario) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         ArrayList<String> postsVotadosP = usuario.getIdsPostsVotadosPositivo();
         ArrayList<String> postsVotadosN = usuario.getIdsPostsVotadosNegativo();
 
         //si el usuario tiene alguno de los Arrays vacios se crea
-        if (postsVotadosP == null ) {
+        if (postsVotadosP == null) {
             postsVotadosP = new ArrayList<>();
         }
         if (postsVotadosN == null) {
             postsVotadosN = new ArrayList<>();
         }
         //Si el post no esta en ningun arraylist se añade a su array coorrespondiente
-        if (!postsVotadosP.contains(post.getPostUID()) && !postsVotadosN.contains(post.getPostUID())){
-            Log.d("votacion",v.getId() + " " + R.id.ivDown);
-            switch (v.getId()){
+        if (!postsVotadosP.contains(post.getPostUID()) && !postsVotadosN.contains(post.getPostUID())) {
+            Log.d("votacion", v.getId() + " " + R.id.ivDown);
+            switch (v.getId()) {
                 case R.id.ivDown:
                     post.setValoracion(post.getValoracion() - 1L);
                     db.collection("Posts").document(post.getPostUID()).set(post);
@@ -392,10 +432,11 @@ public class DetalleActivity extends AppCompatActivity {
 
     /**
      * Creo el recicler View con los comentarios
+     *
      * @param comentarios los comentarios
      */
     public void crearReciclerView(ArrayList<Comentario> comentarios) {
-        adaptador = new AdaptadorComentarios(this, comentarios,null);
+        adaptador = new AdaptadorComentarios(this, comentarios, null);
         rvComments.setAdapter(adaptador);
         rvComments.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         rvComments.addItemDecoration(new DividerItemDecoration(rvComments.getContext(), DividerItemDecoration.VERTICAL));

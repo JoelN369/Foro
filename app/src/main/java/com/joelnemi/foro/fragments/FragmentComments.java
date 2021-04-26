@@ -24,6 +24,7 @@ import com.joelnemi.foro.adapters.AdaptadorComentarios;
 import com.joelnemi.foro.adapters.AdaptadorPosts;
 import com.joelnemi.foro.listeners.IComentClickListener;
 import com.joelnemi.foro.listeners.IOnClickPostListener;
+import com.joelnemi.foro.listeners.IPerfilClickListener;
 import com.joelnemi.foro.models.Comentario;
 import com.joelnemi.foro.models.Post;
 import com.joelnemi.foro.models.Usuario;
@@ -37,6 +38,7 @@ public class FragmentComments extends Fragment implements IComentClickListener {
 
 
     private RecyclerView rvListado;
+    private Usuario usuario;
 
 
     @Nullable
@@ -47,14 +49,25 @@ public class FragmentComments extends Fragment implements IComentClickListener {
 
         rvListado = v.findViewById(R.id.rvItemPosts);
 
+        //Compruebo si el bundle es nulo y si contiene extras y las guardo
+        if (savedInstanceState == null) {
+            Bundle extras = getArguments();
+            if(extras == null) {
+                usuario = null;
+            } else {
+                usuario = (Usuario) extras.getSerializable("usuario");
+            }
+        } else {
+            usuario = (Usuario) savedInstanceState.getSerializable("usuario");
+        }
+
+
+
+
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-        FirebaseAuth mAuth = FirebaseAuth.getInstance();
-        FirebaseUser user = mAuth.getCurrentUser();
-
-
         //Guardo los comentarios del usuario registrado y los muestro en un recicler view
-        db.collection("users").document(user.getUid()).get()
+        db.collection("users").document(usuario.getUserUID()).get()
                 .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                     @Override
                     public void onComplete(@NonNull @NotNull Task<DocumentSnapshot> task) {

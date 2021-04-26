@@ -14,7 +14,8 @@
                 android:id="@+id/toolbar_postsGuardados"
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
-                android:background="?attr/colorPrimary"/>
+                android:background="?attr/colorPrimary"
+                app:titleTextColor="@color/textColor"/>
     </com.google.android.material.appbar.AppBarLayout>
     <include layout="@layout/fragment_home" android:layout_width="wrap_content" android:layout_height="wrap_content"
              app:layout_behavior="@string/appbar_scrolling_view_behavior"

@@ -8,6 +8,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.joelnemi.foro.models.Comunidad;
 
 
 public class CrearComunidadDialog {
@@ -41,8 +42,9 @@ public class CrearComunidadDialog {
             @Override
             public void onClick(View v) {
                 if (etComunidad.getText().length() > 3) {
-                    db.collection("categoria").document(etComunidad.getText().toString())
-                            .set(new String(etComunidad.getText().toString()));
+                    db.collection("categorias").document(etComunidad.getText().toString())
+                            .set(new Comunidad(etComunidad.getText().toString()));
+                    dissmisDialog();
                 }else{
                     Toast.makeText(activity,"El nombre tiene que tener mas de 3 letras", Toast.LENGTH_SHORT).show();
                 }
